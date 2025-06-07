@@ -38,10 +38,9 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         Navigator.pushReplacementNamed(context, '/dashboard');
-      }
-    } catch (e) {
+      }    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Login failed: $e')),
+        SnackBar(content: Text('Invalid email or password. Please try again.')),
       );
     }
 
