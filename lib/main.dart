@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'services/auth_service.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
-import 'screens/home_screen.dart';
+import 'screens/dashboard_screen.dart';
 import 'screens/user_detail_screen.dart';
 
 void main() {
@@ -24,11 +24,10 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           primarySwatch: Colors.blue,
         ),
-        home: const AuthWrapper(),
-        routes: {
+        home: const AuthWrapper(),        routes: {
           '/login': (context) => const LoginScreen(),
           '/register': (context) => const RegisterScreen(),
-          '/home': (context) => const HomeScreen(),
+          '/dashboard': (context) => const DashboardScreen(),
         },
         onGenerateRoute: (settings) {
           if (settings.name == '/user-detail') {
@@ -59,9 +58,8 @@ class AuthWrapper extends StatelessWidget {
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        
-        if (snapshot.data == true) {
-          return const HomeScreen();
+          if (snapshot.data == true) {
+          return const DashboardScreen();
         } else {
           return const LoginScreen();
         }

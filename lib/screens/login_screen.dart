@@ -29,16 +29,15 @@ class _LoginScreenState extends State<LoginScreen> {
       
       // Estrazione del user_id dal risultato
       final userId = loginResult['user_id']?.toString();
-      
-      // Navigazione a /home passando il user_id come argomento
+        // Navigazione a /dashboard passando il user_id come argomento
       if (userId != null) {
         Navigator.pushReplacementNamed(
           context, 
-          '/home',
+          '/dashboard',
           arguments: {'user_id': userId},
         );
       } else {
-        Navigator.pushReplacementNamed(context, '/home');
+        Navigator.pushReplacementNamed(context, '/dashboard');
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
