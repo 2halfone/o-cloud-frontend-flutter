@@ -23,6 +23,7 @@ class AuthService {
         body: jsonEncode({
           'email': email,
           'password': password,
+          // ❌ NON inviamo il campo 'name' - il backend lo genererà automaticamente
         }),
       ).timeout(const Duration(seconds: 10));
 
