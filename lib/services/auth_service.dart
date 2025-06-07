@@ -5,67 +5,87 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import '../utils/token_manager.dart';
 
 class AuthService {
-  static const String _baseUrl = 'https://34.140.122.146';
+  static const String _baseUrl = 'http://34.140.122.146';
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
-  Future<Map<String, dynamic>> login(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/auth/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
-    );
-
-    if (response.statusCode == 200) {
-      final responseData = jsonDecode(response.body) as Map<String, dynamic>;
-      
-      // Estrazione di access_token, refresh_token e claim aggiuntivi
-      final accessToken = responseData['access_token'] as String?;
-      final refreshToken = responseData['refresh_token'] as String?;
-      
-      if (accessToken == null) {
-        throw Exception('Access token not found in response');
-      }
-      
-      // Salvataggio sicuro dei token
-      await _storage.write(key: 'access_token', value: accessToken);
-      if (refreshToken != null) {
-        await _storage.write(key: 'refresh_token', value: refreshToken);
-      }
-      
-      // Decodifica della payload JWT per estrarre claim aggiuntivi
-      try {
-        final decodedToken = JwtDecoder.decode(accessToken);
-        final userId = decodedToken['user_id']?.toString();
-        final email = decodedToken['email']?.toString();
-        
-        // Salvataggio claim aggiuntivi
-        if (userId != null) {
-          await _storage.write(key: 'user_id', value: userId);
-        }
-        if (email != null) {
-          await _storage.write(key: 'user_email', value: email);
-        }
-        
-        // Ritorna tutti i dati utili per la UI
-        return {
-          'access_token': accessToken,
-          'refresh_token': refreshToken,
-          'user_id': userId,
+  Future<void> register(String email, String password) async {
+    print('🔄 Starting registration request...');
+    print('📧 Email: $email');
+    print('🌐 URL: $_baseUrl/auth/register');
+    
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/register'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
           'email': email,
-          'decoded_payload': decodedToken,
-        };
-      } catch (e) {
-        // Se la decodifica fallisce, ritorna almeno i token
-        return {
-          'access_token': accessToken,
-          'refresh_token': refreshToken,
-        };
+          'password': password,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      print('📡 Response status: ${response.statusCode}');
+      print('📄 Response body: ${response.body}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('✅ Registration successful!');
+      } else {
+        print('❌ Registration failed: ${response.statusCode}');
+        throw Exception('Registration failed: ${response.body}');
       }
-    } else {
-      throw Exception('Failed to login: ${response.body}');
+    } catch (e) {
+      print('💥 Registration error: $e');
+      throw Exception('Registration failed: $e');
+    }
+  }
+
+  Future<Map<String, dynamic>> login(String email, String password) async {
+    print('🔄 Starting login request...');
+    print('📧 Email: $email');
+    print('🌐 URL: $_baseUrl/auth/login');
+    
+    try {
+      final response = await http.post(
+        Uri.parse('$_baseUrl/auth/login'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'email': email,
+          'password': password,
+        }),
+      ).timeout(const Duration(seconds: 10));
+
+      print('📡 Login response status: ${response.statusCode}');
+      print('📄 Login response body: ${response.body}');
+
+      if (response.statusCode == 200) {
+        final responseData = jsonDecode(response.body) as Map<String, dynamic>;
+        
+        final accessToken = responseData['access_token'] as String?;
+        final refreshToken = responseData['refresh_token'] as String?;
+        
+        if (accessToken == null) {
+          throw Exception('Access token not found in response');
+        }
+        
+        await _storage.write(key: 'access_token', value: accessToken);
+        if (refreshToken != null) {
+          await _storage.write(key: 'refresh_token', value: refreshToken);
+        }
+        
+        print('✅ Login successful!');
+        return responseData;
+      } else {
+        print('❌ Login failed: ${response.statusCode}');
+        throw Exception('Login failed: ${response.body}');
+      }
+    } catch (e) {
+      print('💥 Login error: $e');
+      throw Exception('Login failed: $e');
     }
   }
 
@@ -158,21 +178,6 @@ class AuthService {
       return false;
     } catch (e) {
       return false;
-    }
-  }
-
-  Future<void> register(String email, String password) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/auth/register'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': email,
-        'password': password,
-      }),
-    );
-
-    if (response.statusCode != 201) {
-      throw Exception('Failed to register: ${response.body}');
     }
   }
 

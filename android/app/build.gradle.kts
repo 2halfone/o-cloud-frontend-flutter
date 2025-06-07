@@ -6,17 +6,17 @@ plugins {
 }
 
 android {
-    namespace = "com.example.go_cloud_backend"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    namespace = "com.example.go_cloud_front_end"
+    compileSdk = 34
+    ndkVersion = "27.0.12077973"  // Aggiungi questa riga
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = "1.8"
     }
 
     defaultConfig {

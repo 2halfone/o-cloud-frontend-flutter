@@ -17,29 +17,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _confirmPasswordController = TextEditingController();
   final _authService = AuthService();
   bool _isLoading = false;
-
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
+    print('🚀 Starting registration process...');
     setState(() => _isLoading = true);
 
     try {
+      print('Attempting to register with email: ${_emailController.text}');
+
       await _authService.register(
         _emailController.text,
         _passwordController.text,
       );
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Registration successful')),
-      );
-      Navigator.pop(context);
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Registration failed: $e')),
-      );
-    }
 
-    setState(() => _isLoading = false);
+      print('✅ Registration completed successfully!');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Registration successful!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      print('❌ Registration failed with error: $e');
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Registration failed: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -97,8 +118,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   Text(
                     'Create Account',
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   const SizedBox(height: 32),
                   ..._buildFormFields(),
@@ -157,13 +178,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
               borderRadius: BorderRadius.circular(8),
             ),
           ),
-          child: _isLoading 
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Text('Register', style: TextStyle(fontSize: 16)),
+          child: _isLoading
+              ? const SizedBox(
+                  height: 20,
+                  width: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Text('Register', style: TextStyle(fontSize: 16)),
         ),
       ),
     ];
