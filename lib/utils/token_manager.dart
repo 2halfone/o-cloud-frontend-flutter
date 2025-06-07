@@ -7,7 +7,7 @@ class TokenManager {
       publicKey: 'GoCloudPublicKey',
     ),
   );
-  static const String _tokenKey = 'jwt_token';
+  static const String _tokenKey = 'access_token';
 
   static Future<void> saveToken(String token) async {
     await _storage.write(key: _tokenKey, value: token);

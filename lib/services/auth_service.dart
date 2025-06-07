@@ -68,12 +68,12 @@ class AuthService {
         
         final accessToken = responseData['access_token'] as String?;
         final refreshToken = responseData['refresh_token'] as String?;
-        
-        if (accessToken == null) {
+          if (accessToken == null) {
           throw Exception('Access token not found in response');
         }
         
-        await _storage.write(key: 'access_token', value: accessToken);
+        // Usa TokenManager per salvare il token
+        await TokenManager.saveToken(accessToken);
         if (refreshToken != null) {
           await _storage.write(key: 'refresh_token', value: refreshToken);
         }
@@ -89,14 +89,13 @@ class AuthService {
       throw Exception('Login failed: $e');
     }
   }
-
   // Metodo per richieste autorizzate con auto-refresh
   Future<http.Response> makeAuthorizedRequest(
     String method,
     String endpoint,
     {Map<String, dynamic>? body}
   ) async {
-    final accessToken = await _storage.read(key: 'access_token');
+    final accessToken = await TokenManager.getToken();
     
     final headers = {
       'Content-Type': 'application/json',
@@ -120,13 +119,12 @@ class AuthService {
       default:
         throw Exception('Unsupported HTTP method: $method');
     }
-    
-    // Gestione automatica del rinnovo token su 401
+      // Gestione automatica del rinnovo token su 401
     if (response.statusCode == 401 && accessToken != null) {
       final refreshed = await _refreshToken();
       if (refreshed) {
         // Ripeti la richiesta una sola volta con il nuovo token
-        final newAccessToken = await _storage.read(key: 'access_token');
+        final newAccessToken = await TokenManager.getToken();
         headers['Authorization'] = 'Bearer $newAccessToken';
         
         switch (method.toUpperCase()) {
@@ -162,14 +160,13 @@ class AuthService {
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'refresh_token': refreshToken}),
       );
-      
-      if (response.statusCode == 200) {
+        if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
         final newAccessToken = responseData['access_token'] as String?;
         final newRefreshToken = responseData['refresh_token'] as String?;
         
         if (newAccessToken != null) {
-          await _storage.write(key: 'access_token', value: newAccessToken);
+          await TokenManager.saveToken(newAccessToken);
           if (newRefreshToken != null) {
             await _storage.write(key: 'refresh_token', value: newRefreshToken);
           }
@@ -181,18 +178,15 @@ class AuthService {
       return false;
     }
   }
-
   Future<void> logout() async {
     // Rimuovi tutti i token e dati utente
-    await _storage.delete(key: 'access_token');
+    await TokenManager.deleteToken();
     await _storage.delete(key: 'refresh_token');
     await _storage.delete(key: 'user_id');
     await _storage.delete(key: 'user_email');
-    await TokenManager.deleteToken(); // Compatibilità con il vecchio sistema
   }
-
   Future<bool> isLoggedIn() async {
-    final accessToken = await _storage.read(key: 'access_token');
+    final accessToken = await TokenManager.getToken();
     if (accessToken == null) return false;
     
     // Verifica se il token è ancora valido
@@ -210,9 +204,46 @@ class AuthService {
   
   Future<String?> getUserEmail() async {
     return await _storage.read(key: 'user_email');
+  }    Future<String?> getAccessToken() async {
+    return await TokenManager.getToken();
   }
-  
-  Future<String?> getAccessToken() async {
-    return await _storage.read(key: 'access_token');
+    // Metodo per verificare se l'utente è admin decodificando il JWT token
+  Future<bool> isUserAdmin() async {
+    try {
+      final accessToken = await TokenManager.getToken();
+      if (accessToken == null) return false;
+      
+      // Decodifica il JWT token per accedere ai claims
+      final decodedToken = JwtDecoder.decode(accessToken);
+      
+      // Controlla se l'utente ha il ruolo admin
+      // Il campo può essere 'role', 'roles', 'user_type', o 'is_admin' a seconda del backend
+      final role = decodedToken['role'] ?? decodedToken['user_type'] ?? decodedToken['is_admin'];
+      final roles = decodedToken['roles'] as List<dynamic>?;
+      
+      // Verifica diversi formati possibili per il ruolo admin
+      if (role is String && (role.toLowerCase() == 'admin' || role.toLowerCase() == 'administrator')) {
+        return true;
+      }
+      
+      if (role is bool && role == true) {
+        return true;
+      }
+      
+      if (roles != null && roles.any((r) => r.toString().toLowerCase() == 'admin')) {
+        return true;
+      }
+      
+      // Controlla anche nell'email se contiene 'admin'
+      final email = decodedToken['email'] ?? decodedToken['sub'];
+      if (email is String && email.toLowerCase().contains('admin')) {
+        return true;
+      }
+      
+      return false;
+    } catch (e) {
+      print('🔍 Error checking admin status: $e');
+      return false;
+    }
   }
 }

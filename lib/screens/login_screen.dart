@@ -77,7 +77,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Invalid email or password. Please try again.')),
+        const SnackBar(content: Text('Invalid email or password. Please try again.')),
       );
     }
 
@@ -147,7 +147,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                               ),
                             ],
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.cloud,
                             size: 48,
                             color: Colors.white,

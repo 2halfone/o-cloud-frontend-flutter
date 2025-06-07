@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart';
+import 'admin_logs_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -11,6 +13,8 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
   late final AnimationController _controller;
   late final Animation<Offset> _slideAnimation;
   late final Animation<double> _fadeAnimation;
+  final AuthService _authService = AuthService();
+  bool _isAdmin = false;
 
   @override
   void initState() {
@@ -34,6 +38,38 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
       curve: Curves.easeInOut,
     ));
     _controller.forward();
+    _checkAdminStatus();
+  }
+  Future<void> _checkAdminStatus() async {
+    final isAdmin = await _authService.isUserAdmin();
+    if (mounted) {
+      setState(() {
+        _isAdmin = isAdmin;
+      });
+    }
+  }  /// Apre la schermata dei log di autenticazione per gli admin
+  Future<void> _openAdminFeatures(BuildContext context) async {
+    // Verifica se l'utente è admin
+    final isAdminUser = await _authService.isUserAdmin();
+    if (!isAdminUser) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Access denied. Admin privileges required.'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    // Naviga alla schermata dei log
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AdminLogsScreen(),
+      ),
+    );
   }
 
   @override
@@ -195,8 +231,61 @@ class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProv
                                   ],
                                 ),
                               ),
+                              const SizedBox(height: 24),                            ],
+                            
+                            // Pulsante Analytics - visibile solo per admin
+                            if (_isAdmin) ...[
                               const SizedBox(height: 24),
+                              Container(
+                                decoration: BoxDecoration(
+                                  gradient: const LinearGradient(
+                                    colors: [Color(0xFFFF6B35), Color(0xFFF7931E)], // Colori Grafana
+                                  ),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: const Color(0xFFFF6B35).withOpacity(0.3),
+                                      blurRadius: 15,
+                                      offset: const Offset(0, 5),
+                                    ),
+                                  ],
+                                ),
+                                child: ElevatedButton.icon(
+                                  onPressed: () => _openAdminFeatures(context),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.transparent,
+                                    shadowColor: Colors.transparent,
+                                    padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),                                  icon: const Icon(
+                                    Icons.analytics,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                  label: const Text(
+                                    'Analytics Dashboard',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Text(
+                                '🔧 Admin Tools',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.orange.shade700,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ],
+                            
+                            const SizedBox(height: 32),
                             
                             // Logout button
                             Container(

@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadUsers() async {
     try {
-      final users = await _userService.fetchUsers();
+      final users = await _userService.getUsers(); // ✅ Cambiato da fetchUsers() a getUsers()
       setState(() {
         _users = users;
         _isLoading = false;

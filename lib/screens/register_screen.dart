@@ -172,10 +172,10 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            gradient: LinearGradient(
+                            gradient: const LinearGradient(
                               colors: [
-                                const Color(0xFF667eea),
-                                const Color(0xFF764ba2),
+                                Color(0xFF667eea),
+                                Color(0xFF764ba2),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(20),
@@ -187,7 +187,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                               ),
                             ],
                           ),
-                          child: Icon(
+                          child: const Icon(
                             Icons.person_add,
                             size: 48,
                             color: Colors.white,
@@ -195,10 +195,10 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                         ),
                         const SizedBox(height: 24),
                         ShaderMask(
-                          shaderCallback: (bounds) => LinearGradient(
+                          shaderCallback: (bounds) => const LinearGradient(
                             colors: [
-                              const Color(0xFF667eea),
-                              const Color(0xFF764ba2),
+                              Color(0xFF667eea),
+                              Color(0xFF764ba2),
                             ],
                           ).createShader(bounds),
                           child: Text(
@@ -266,27 +266,27 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
               }
               return null;
             },
-          ),
-          const SizedBox(height: 16),
+          ),          const SizedBox(height: 16),
           CustomTextField(
             controller: _confirmPasswordController,
             labelText: 'Confirm Password',
             obscureText: true,
+            icon: Icons.lock_outline,
             validator: (value) {
               if (value != _passwordController.text) {
                 return 'Passwords do not match';
               }
               return null;
             },
-          ),          const SizedBox(height: 24),
+          ),const SizedBox(height: 24),
           Container(
             width: double.infinity,
             height: 48,
             decoration: BoxDecoration(
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 colors: [
-                  const Color(0xFF667eea),
-                  const Color(0xFF764ba2),
+                  Color(0xFF667eea),
+                  Color(0xFF764ba2),
                 ],
               ),
               borderRadius: BorderRadius.circular(12),
@@ -325,9 +325,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
           ),
           const SizedBox(height: 16),          TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text(
+            child: const Text(
               'Already have an account? Sign In',
-              style: TextStyle(color: const Color(0xFF667eea)),
+              style: TextStyle(color: Color(0xFF667eea)),
             ),
           ),
         ],
