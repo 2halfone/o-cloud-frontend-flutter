@@ -7,12 +7,7 @@ import '../utils/token_manager.dart';
 class AuthService {
   static const String _baseUrl = 'http://34.140.122.146';
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
-
   Future<void> register(String email, String password) async {
-    print('🔄 Starting registration request...');
-    print('📧 Email: $email');
-    print('🌐 URL: $_baseUrl/auth/register');
-    
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/register'),
@@ -27,26 +22,16 @@ class AuthService {
         }),
       ).timeout(const Duration(seconds: 10));
 
-      print('📡 Response status: ${response.statusCode}');
-      print('📄 Response body: ${response.body}');
-
       if (response.statusCode == 200 || response.statusCode == 201) {
-        print('✅ Registration successful!');
+        // Registration successful
       } else {
-        print('❌ Registration failed: ${response.statusCode}');
         throw Exception('Registration failed: ${response.body}');
       }
     } catch (e) {
-      print('💥 Registration error: $e');
       throw Exception('Registration failed: $e');
     }
   }
-
   Future<Map<String, dynamic>> login(String email, String password) async {
-    print('🔄 Starting login request...');
-    print('📧 Email: $email');
-    print('🌐 URL: $_baseUrl/auth/login');
-    
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/login'),
@@ -59,9 +44,6 @@ class AuthService {
           'password': password,
         }),
       ).timeout(const Duration(seconds: 10));
-
-      print('📡 Login response status: ${response.statusCode}');
-      print('📄 Login response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body) as Map<String, dynamic>;
@@ -80,14 +62,11 @@ class AuthService {
         // Salva l'email dell'utente per uso futuro
         await _storage.write(key: 'user_email', value: email);
         
-        print('✅ Login successful!');
         return responseData;
       } else {
-        print('❌ Login failed: ${response.statusCode}');
         throw Exception('Login failed: ${response.body}');
       }
     } catch (e) {
-      print('💥 Login error: $e');
       throw Exception('Login failed: $e');
     }
   }
@@ -241,10 +220,8 @@ class AuthService {
       if (email is String && email.toLowerCase().contains('admin')) {
         return true;
       }
-      
-      return false;
+        return false;
     } catch (e) {
-      print('🔍 Error checking admin status: $e');
       return false;
     }
   }

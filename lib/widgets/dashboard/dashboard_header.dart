@@ -4,11 +4,13 @@ import '../../screens/settings_screen.dart';
 class DashboardHeader extends StatelessWidget {
   final bool isAdmin;
   final VoidCallback onLogout;
+  final String userName;
 
   const DashboardHeader({
     super.key,
     required this.isAdmin,
     required this.onLogout,
+    required this.userName,
   });
 
   @override

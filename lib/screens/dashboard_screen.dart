@@ -45,14 +45,10 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
     
     _animations.startAnimations();
-  }
-  Future<void> _loadUserData() async {
+  }  Future<void> _loadUserData() async {
     final isAdmin = await _authService.isUserAdmin();
     final userEmail = await _authService.getUserEmail();
     final extractedName = _extractUserName(userEmail ?? '');
-    
-    print('DEBUG: userEmail = $userEmail');
-    print('DEBUG: extractedName = $extractedName');
     
     if (mounted) {
       setState(() {
@@ -64,10 +60,8 @@ class _DashboardScreenState extends State<DashboardScreen>
   String _extractUserName(String email) {
     if (email.isNotEmpty && email.contains('@')) {
       String name = email.split('@')[0];
-      print('DEBUG: Extracted name "$name" from email "$email"');
       return name;
     }
-    print('DEBUG: No valid email provided: "$email"');
     return 'User'; // Fallback
   }
 
@@ -91,6 +85,7 @@ class _DashboardScreenState extends State<DashboardScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [                  // Header with user info and quick actions
                   DashboardHeader(
+                    userName: _userName,
                     isAdmin: _isAdmin,
                     onLogout: () => LogoutDialog.show(context),
                   ),

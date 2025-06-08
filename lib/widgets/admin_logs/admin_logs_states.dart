@@ -9,20 +9,18 @@ class AdminLogsStates {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withOpacity(0.1),
-              Colors.white.withOpacity(0.05),
+            end: Alignment.bottomRight,            colors: [
+              Colors.white.withValues(alpha: 0.1),
+              Colors.white.withValues(alpha: 0.05),
             ],
-          ),
-          borderRadius: BorderRadius.circular(25),
+          ),          borderRadius: BorderRadius.circular(25),
           border: Border.all(
-            color: Colors.white.withOpacity(0.2),
+            color: Colors.white.withValues(alpha: 0.2),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -70,20 +68,19 @@ class AdminLogsStates {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.red.withOpacity(0.1),
-              Colors.red.withOpacity(0.05),
+            end: Alignment.bottomRight,            colors: [
+              Colors.red.withValues(alpha: 0.1),
+              Colors.red.withValues(alpha: 0.05),
             ],
           ),
           borderRadius: BorderRadius.circular(25),
           border: Border.all(
-            color: Colors.red.withOpacity(0.3),
+            color: Colors.red.withValues(alpha: 0.3),
             width: 1,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.red.withOpacity(0.1),
+              color: Colors.red.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -99,9 +96,8 @@ class AdminLogsStates {
                   colors: [Colors.red.shade400, Colors.red.shade600],
                 ),
                 borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.red.withOpacity(0.3),
+                boxShadow: [                  BoxShadow(
+                    color: Colors.red.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -122,12 +118,11 @@ class AdminLogsStates {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
+            const SizedBox(height: 12),            Text(
               error,
               textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 16,
               ),
             ),
@@ -138,15 +133,14 @@ class AdminLogsStates {
                 padding: const EdgeInsets.symmetric(
                   horizontal: 32,
                   vertical: 16,
-                ),
-                decoration: BoxDecoration(
+                ),                decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [Colors.blue.shade400, Colors.blue.shade600],
                   ),
                   borderRadius: BorderRadius.circular(25),
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.blue.withOpacity(0.3),
+                      color: Colors.blue.withValues(alpha: 0.3),
                       blurRadius: 15,
                       offset: const Offset(0, 5),
                     ),
@@ -183,20 +177,17 @@ class AdminLogsStates {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.blue.withOpacity(0.1),
-              Colors.blue.withOpacity(0.05),
+            end: Alignment.bottomRight,            colors: [
+              Colors.blue.withValues(alpha: 0.1),
+              Colors.blue.withValues(alpha: 0.05),
             ],
           ),
-          borderRadius: BorderRadius.circular(25),
-          border: Border.all(
-            color: Colors.blue.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(25),          border: Border.all(
+            color: Colors.blue.withValues(alpha: 0.3),
             width: 1,
-          ),
-          boxShadow: [
+          ),          boxShadow: [
             BoxShadow(
-              color: Colors.blue.withOpacity(0.1),
+              color: Colors.blue.withValues(alpha: 0.1),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -211,10 +202,9 @@ class AdminLogsStates {
                 gradient: LinearGradient(
                   colors: [Colors.blue.shade400, Colors.blue.shade600],
                 ),
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
+                borderRadius: BorderRadius.circular(20),                boxShadow: [
                   BoxShadow(
-                    color: Colors.blue.withOpacity(0.3),
+                    color: Colors.blue.withValues(alpha: 0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 5),
                   ),
@@ -237,10 +227,9 @@ class AdminLogsStates {
             ),
             const SizedBox(height: 12),
             Text(
-              'No authentication logs are currently available.',
-              textAlign: TextAlign.center,
+              'No authentication logs are currently available.',              textAlign: TextAlign.center,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontSize: 16,
               ),
             ),
@@ -255,12 +244,11 @@ class AdminLogsStates {
       padding: const EdgeInsets.all(20),
       child: Center(
         child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+          padding: const EdgeInsets.all(16),          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               width: 1,
             ),
           ),

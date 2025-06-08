@@ -54,22 +54,16 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     _confirmPasswordController.dispose();
     super.dispose();
   }
-
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
-    print('🚀 Starting registration process...');
     setState(() => _isLoading = true);
 
     try {
-      print('Attempting to register with email: ${_emailController.text}');
-      
       await _authService.register(
         _emailController.text,
         _passwordController.text,
       );
-      
-      print('✅ Registration completed successfully!');
       
       if (mounted) {
         // Mostra messaggio di successo
@@ -95,8 +89,6 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         );
       }
     } catch (e) {
-      print('❌ Registration failed with error: $e');
-      
       if (mounted) {
         // Gestione errori migliorata
         String errorMessage;
@@ -145,10 +137,9 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: SlideTransition(
-                position: _slideAnimation,
-                child: Card(
+                position: _slideAnimation,                child: Card(
                   elevation: 20,
-                  shadowColor: Colors.black.withOpacity(0.3),
+                  shadowColor: Colors.black.withValues(alpha: 0.3),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
@@ -181,7 +172,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFF667eea).withOpacity(0.3),
+                                color: const Color(0xFF667eea).withValues(alpha: 0.3),
                                 blurRadius: 15,
                                 offset: const Offset(0, 8),
                               ),
@@ -292,7 +283,7 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF667eea).withOpacity(0.3),
+                  color: const Color(0xFF667eea).withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),

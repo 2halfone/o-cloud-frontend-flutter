@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../models/auth_log.dart';
 import '../services/log_service.dart';
 import '../widgets/admin_logs/admin_logs_header.dart';
@@ -175,15 +174,14 @@ class _AdminLogsScreenState extends State<AdminLogsScreen>
   @override  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0F0F0F), // Sfondo molto scuro
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
+      body: Container(        decoration: BoxDecoration(
+          gradient: const LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              const Color(0xFF0F0F0F),
-              const Color(0xFF1a1a1a),
-              const Color(0xFF000000),
+              Color(0xFF0F0F0F),
+              Color(0xFF1a1a1a),
+              Color(0xFF000000),
             ],
           ),
           border: Border.all(
@@ -257,12 +255,11 @@ class _AdminLogsScreenState extends State<AdminLogsScreen>
       padding: const EdgeInsets.all(20),
       child: Center(
         child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.1),
+          padding: const EdgeInsets.all(16),          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               width: 1,
             ),
           ),

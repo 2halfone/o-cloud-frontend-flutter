@@ -75,16 +75,15 @@ class _AdminLogsHeaderState extends State<AdminLogsHeader> {
         border: Border.all(
           color: const Color(0xFF000000),
           width: 3,
-        ),
-        boxShadow: [
+        ),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.8),
+            color: Colors.black.withValues(alpha: 0.8),
             blurRadius: 25,
             offset: const Offset(0, 12),
             spreadRadius: 3,
           ),
           BoxShadow(
-            color: const Color(0xFF000000).withOpacity(0.6),
+            color: const Color(0xFF000000).withValues(alpha: 0.6),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -93,16 +92,15 @@ class _AdminLogsHeaderState extends State<AdminLogsHeader> {
       child: Column(
         children: [
           Row(
-            children: [
-              GestureDetector(
+            children: [              GestureDetector(
                 onTap: widget.onBack,
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -115,16 +113,15 @@ class _AdminLogsHeaderState extends State<AdminLogsHeader> {
               ),
               const Spacer(),
               _buildLogo(),
-              const Spacer(),
-              GestureDetector(
+              const Spacer(),              GestureDetector(
                 onTap: widget.isLoading ? null : widget.onRefresh,
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(15),
                     border: Border.all(
-                      color: Colors.white.withOpacity(0.3),
+                      color: Colors.white.withValues(alpha: 0.3),
                       width: 1,
                     ),
                   ),
@@ -183,10 +180,9 @@ class _AdminLogsHeaderState extends State<AdminLogsHeader> {
         gradient: const LinearGradient(
           colors: [Color(0xFF667eea), Color(0xFF764ba2)],
         ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20),        boxShadow: [
           BoxShadow(
-            color: Colors.blue.withOpacity(0.3),
+            color: Colors.blue.withValues(alpha: 0.3),
             blurRadius: 15,
             spreadRadius: 2,
           ),
@@ -201,12 +197,11 @@ class _AdminLogsHeaderState extends State<AdminLogsHeader> {
   }
   Widget _buildStatsRow() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(25),
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -217,11 +212,10 @@ class _AdminLogsHeaderState extends State<AdminLogsHeader> {
             icon: Icons.analytics_outlined,
             label: 'Total',
             value: '${widget.stats!.totalLogs}',
-          ),
-          Container(
+          ),          Container(
             width: 1,
             height: 20,
-            color: Colors.white.withOpacity(0.3),
+            color: Colors.white.withValues(alpha: 0.3),
             margin: const EdgeInsets.symmetric(horizontal: 16),
           ),
           _buildStatItem(

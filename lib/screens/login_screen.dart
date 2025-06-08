@@ -105,10 +105,9 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             child: FadeTransition(
               opacity: _fadeAnimation,
               child: SlideTransition(
-                position: _slideAnimation,
-                child: Card(
+                position: _slideAnimation,                child: Card(
                   elevation: 20,
-                  shadowColor: Colors.black.withOpacity(0.3),
+                  shadowColor: Colors.black.withValues(alpha: 0.3),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(24),
                   ),
@@ -141,7 +140,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                                color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                                 blurRadius: 15,
                                 offset: const Offset(0, 8),
                               ),
@@ -230,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
               borderRadius: BorderRadius.circular(12),
               boxShadow: [
                 BoxShadow(
-                  color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+                  color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),

@@ -74,10 +74,9 @@ class AuthLog {
     // Estrae la parte prima della @ dall'email
     return userEmail.split('@')[0];
   }
-
   // Getter per informazioni complete di display
   String get fullDisplayInfo {
-    return '${displayName} (${userEmail})';
+    return '$displayName ($userEmail)';
   }
 }
 

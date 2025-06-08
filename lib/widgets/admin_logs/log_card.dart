@@ -23,24 +23,21 @@ class LogCard extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white.withOpacity(0.9),
-              Colors.white.withOpacity(0.7),
+            end: Alignment.bottomRight,            colors: [
+              Colors.white.withValues(alpha: 0.9),
+              Colors.white.withValues(alpha: 0.7),
             ],
           ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
+          borderRadius: BorderRadius.circular(20),          boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 5),
             ),
-          ],
-          border: Border.all(
+          ],          border: Border.all(
             color: log.success 
-                ? Colors.green.withOpacity(0.3)
-                : Colors.red.withOpacity(0.3),
+                ? Colors.green.withValues(alpha: 0.3)
+                : Colors.red.withValues(alpha: 0.3),
             width: 1,
           ),
         ),
@@ -63,10 +60,9 @@ class LogCard extends StatelessWidget {
                             ? [Colors.green.shade400, Colors.green.shade600]
                             : [Colors.red.shade400, Colors.red.shade600],
                       ),
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
+                      borderRadius: BorderRadius.circular(15),                      boxShadow: [
                         BoxShadow(
-                          color: (log.success ? Colors.green : Colors.red).withOpacity(0.3),
+                          color: (log.success ? Colors.green : Colors.red).withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -101,11 +97,10 @@ class LogCard extends StatelessWidget {
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
+                              ),                              decoration: BoxDecoration(
                                 color: log.success 
-                                    ? Colors.green.withOpacity(0.2)
-                                    : Colors.red.withOpacity(0.2),
+                                    ? Colors.green.withValues(alpha: 0.2)
+                                    : Colors.red.withValues(alpha: 0.2),
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: Text(

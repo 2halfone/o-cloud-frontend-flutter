@@ -3,9 +3,8 @@ import 'package:http/http.dart' as http;
 import '../models/user.dart';
 import '../utils/constants.dart';
 
-class UserService {
-  // ✅ Usa ApiConstants invece di USER_BASE_URL non definito
-  static const String _baseUrl = ApiConstants.USER_BASE_URL;
+class UserService {  // ✅ Usa ApiConstants invece di userBaseUrl non definito
+  static const String _baseUrl = ApiConstants.userBaseUrl;
 
   Future<List<User>> getUsers() async {
     final response = await http.get(

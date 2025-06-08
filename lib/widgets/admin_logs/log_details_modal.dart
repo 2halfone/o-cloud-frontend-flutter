@@ -27,20 +27,18 @@ class LogDetailsModal extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              const Color(0xFF1E3A8A).withOpacity(0.95),
-              const Color(0xFF3B82F6).withOpacity(0.9),
+            end: Alignment.bottomRight,            colors: [
+              const Color(0xFF1E3A8A).withValues(alpha: 0.95),
+              const Color(0xFF3B82F6).withValues(alpha: 0.9),
             ],
           ),
-          borderRadius: BorderRadius.circular(25),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.3),
-              blurRadius: 20,
-              offset: const Offset(0, 10),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(25),        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -58,10 +56,9 @@ class LogDetailsModal extends StatelessWidget {
                             ? [Colors.green.shade400, Colors.green.shade600]
                             : [Colors.red.shade400, Colors.red.shade600],
                       ),
-                      borderRadius: BorderRadius.circular(15),
-                      boxShadow: [
+                      borderRadius: BorderRadius.circular(15),                      boxShadow: [
                         BoxShadow(
-                          color: (log.success ? Colors.green : Colors.red).withOpacity(0.3),
+                          color: (log.success ? Colors.green : Colors.red).withValues(alpha: 0.3),
                           blurRadius: 8,
                           offset: const Offset(0, 3),
                         ),
@@ -87,9 +84,8 @@ class LogDetailsModal extends StatelessWidget {
                           ),
                         ),
                         Text(
-                          log.success ? 'Successful Authentication' : 'Failed Authentication',
-                          style: TextStyle(
-                            color: Colors.white.withOpacity(0.8),
+                          log.success ? 'Successful Authentication' : 'Failed Authentication',                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 14,
                           ),
                         ),
@@ -99,9 +95,8 @@ class LogDetailsModal extends StatelessWidget {
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                      padding: const EdgeInsets.all(8),                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: const Icon(
@@ -163,12 +158,11 @@ class LogDetailsModal extends StatelessWidget {
   }) {
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+      padding: const EdgeInsets.all(16),      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: Colors.white.withValues(alpha: 0.2),
           width: 1,
         ),
       ),
@@ -176,9 +170,8 @@ class LogDetailsModal extends StatelessWidget {
         crossAxisAlignment: isExpanded ? CrossAxisAlignment.start : CrossAxisAlignment.center,
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+            padding: const EdgeInsets.all(8),            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
@@ -193,9 +186,8 @@ class LogDetailsModal extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  label,
-                  style: TextStyle(
-                    color: Colors.white.withOpacity(0.8),
+                  label,                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.8),
                     fontSize: 12,
                     fontWeight: FontWeight.w500,
                   ),
