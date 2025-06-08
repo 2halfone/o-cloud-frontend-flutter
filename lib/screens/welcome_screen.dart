@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import 'admin_logs_screen.dart';
 
-class DashboardScreen extends StatefulWidget {
-  const DashboardScreen({super.key});
+class WelcomeScreen extends StatefulWidget {
+  const WelcomeScreen({super.key});
 
   @override
-  _DashboardScreenState createState() => _DashboardScreenState();
+  _WelcomeScreenState createState() => _WelcomeScreenState();
 }
 
-class _DashboardScreenState extends State<DashboardScreen> with SingleTickerProviderStateMixin {
+class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<Offset> _slideAnimation;
   late final Animation<double> _fadeAnimation;
