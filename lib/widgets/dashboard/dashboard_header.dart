@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../screens/settings_screen.dart';
 
 class DashboardHeader extends StatelessWidget {
   final String userName;
@@ -81,11 +82,15 @@ class DashboardHeader extends StatelessWidget {
                       // TODO: Implement refresh functionality
                     },
                   ),
-                  const SizedBox(width: 12),
-                  _buildQuickAction(
+                  const SizedBox(width: 12),                  _buildQuickAction(
                     icon: Icons.settings_rounded,
                     onTap: () {
-                      // TODO: Implement settings navigation
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SettingsScreen(),
+                        ),
+                      );
                     },
                   ),
                   const SizedBox(width: 12),

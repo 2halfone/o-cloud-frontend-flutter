@@ -93,9 +93,14 @@ class _DashboardScreenState extends State<DashboardScreen>
                   ),
                   
                   const SizedBox(height: 24),
-                  
-                  // Welcome Card
+                    // Welcome Card
                   _buildWelcomeCard(),
+                    const SizedBox(height: 24),
+                  
+                  // Dashboard Clock
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  ),
                   
                   const SizedBox(height: 32),
                   
