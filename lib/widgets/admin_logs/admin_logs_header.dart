@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../models/auth_log.dart';
+import '../../services/auth_service.dart';
 
-class AdminLogsHeader extends StatelessWidget {
+class AdminLogsHeader extends StatefulWidget {
   final AuthLogStats? stats;
   final bool isLoading;
   final VoidCallback onRefresh;
@@ -16,6 +17,44 @@ class AdminLogsHeader extends StatelessWidget {
   });
 
   @override
+  _AdminLogsHeaderState createState() => _AdminLogsHeaderState();
+}
+
+class _AdminLogsHeaderState extends State<AdminLogsHeader> {
+  final AuthService _authService = AuthService();
+  String _userName = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final userEmail = await _authService.getUserEmail();
+    final extractedName = _extractUserName(userEmail ?? '');
+    
+    if (mounted) {
+      setState(() {
+        _userName = extractedName;
+      });
+    }
+  }
+
+  String _extractUserName(String email) {
+    if (email.isNotEmpty && email.contains('@')) {
+      String name = email.split('@')[0];
+      return name;
+    }
+    return 'User'; // Fallback
+  }
+
+  String _getGreeting() {
+    final hour = DateTime.now().hour;
+    if (hour < 12) return 'Morning';
+    if (hour < 17) return 'Afternoon';
+    return 'Evening';
+  }  @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(24),
@@ -24,20 +63,30 @@ class AdminLogsHeader extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF1E3A8A).withOpacity(0.9),
-            const Color(0xFF3B82F6).withOpacity(0.8),
-            const Color(0xFF06B6D4).withOpacity(0.7),
+            const Color(0xFF1a1a1a),
+            const Color(0xFF2d2d2d),
+            const Color(0xFF404040),
           ],
         ),
         borderRadius: const BorderRadius.only(
           bottomLeft: Radius.circular(30),
           bottomRight: Radius.circular(30),
         ),
+        border: Border.all(
+          color: const Color(0xFF000000),
+          width: 3,
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 10),
+            color: Colors.black.withOpacity(0.8),
+            blurRadius: 25,
+            offset: const Offset(0, 12),
+            spreadRadius: 3,
+          ),
+          BoxShadow(
+            color: const Color(0xFF000000).withOpacity(0.6),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -46,7 +95,7 @@ class AdminLogsHeader extends StatelessWidget {
           Row(
             children: [
               GestureDetector(
-                onTap: onBack,
+                onTap: widget.onBack,
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -68,7 +117,7 @@ class AdminLogsHeader extends StatelessWidget {
               _buildLogo(),
               const Spacer(),
               GestureDetector(
-                onTap: isLoading ? null : onRefresh,
+                onTap: widget.isLoading ? null : widget.onRefresh,
                 child: Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
@@ -79,7 +128,7 @@ class AdminLogsHeader extends StatelessWidget {
                       width: 1,
                     ),
                   ),
-                  child: isLoading
+                  child: widget.isLoading
                       ? const SizedBox(
                           width: 20,
                           height: 20,
@@ -98,6 +147,19 @@ class AdminLogsHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 20),
+          // Messaggio di benvenuto personalizzato
+          Text(
+            _userName.isNotEmpty 
+              ? 'Good ${_getGreeting()}, $_userName!'
+              : 'Good ${_getGreeting()}, Admin!',
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 18,
+              fontWeight: FontWeight.w500,
+              letterSpacing: 0.5,
+            ),
+          ),
+          const SizedBox(height: 8),
           const Text(
             'Authentication Logs',
             style: TextStyle(
@@ -108,7 +170,7 @@ class AdminLogsHeader extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          if (stats != null) _buildStatsRow(),
+          if (widget.stats != null) _buildStatsRow(),
         ],
       ),
     );
@@ -137,7 +199,6 @@ class AdminLogsHeader extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildStatsRow() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -155,7 +216,7 @@ class AdminLogsHeader extends StatelessWidget {
           _buildStatItem(
             icon: Icons.analytics_outlined,
             label: 'Total',
-            value: '${stats!.totalLogs}',
+            value: '${widget.stats!.totalLogs}',
           ),
           Container(
             width: 1,
@@ -166,7 +227,7 @@ class AdminLogsHeader extends StatelessWidget {
           _buildStatItem(
             icon: Icons.pages_outlined,
             label: 'Page',
-            value: '${stats!.currentPage}/${stats!.pagesTotal}',
+            value: '${widget.stats!.currentPage}/${widget.stats!.pagesTotal}',
           ),
         ],
       ),

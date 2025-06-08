@@ -172,25 +172,41 @@ class _AdminLogsScreenState extends State<AdminLogsScreen>
     LogDetailsModal.show(context, log);
   }
 
-  @override
-  Widget build(BuildContext context) {
+  @override  Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0E27),
-      body: FadeTransition(
-        opacity: _fadeAnimation,
-        child: SlideTransition(
-          position: _slideAnimation,
-          child: SafeArea(
-            child: Column(
-              children: [
-                AdminLogsHeader(
-                  stats: _stats,
-                  isLoading: _isLoading,
-                  onBack: () => Navigator.pop(context),
-                  onRefresh: () => _refreshLogs(),
-                ),
-                Expanded(child: _buildBody()),
-              ],
+      backgroundColor: const Color(0xFF0F0F0F), // Sfondo molto scuro
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0xFF0F0F0F),
+              const Color(0xFF1a1a1a),
+              const Color(0xFF000000),
+            ],
+          ),
+          border: Border.all(
+            color: const Color(0xFF333333),
+            width: 2,
+          ),
+        ),
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: SafeArea(
+              child: Column(
+                children: [
+                  AdminLogsHeader(
+                    stats: _stats,
+                    isLoading: _isLoading,
+                    onBack: () => Navigator.pop(context),
+                    onRefresh: () => _refreshLogs(),
+                  ),
+                  Expanded(child: _buildBody()),
+                ],
+              ),
             ),
           ),
         ),

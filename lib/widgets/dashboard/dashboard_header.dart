@@ -2,13 +2,11 @@ import 'package:flutter/material.dart';
 import '../../screens/settings_screen.dart';
 
 class DashboardHeader extends StatelessWidget {
-  final String userName;
   final bool isAdmin;
   final VoidCallback onLogout;
 
   const DashboardHeader({
     super.key,
-    required this.userName,
     required this.isAdmin,
     required this.onLogout,
   });
@@ -19,59 +17,34 @@ class DashboardHeader extends StatelessWidget {
       padding: const EdgeInsets.all(24.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+        children: [          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Welcome section
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome back,',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.grey[400],
-                      ),
+              // Admin badge section (only if admin)
+              if (isAdmin)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: const LinearGradient(
+                      colors: [Color(0xFF667eea), Color(0xFF764ba2)],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      userName,
-                      style: const TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: -0.5,
-                      ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: const Text(
+                    'ADMIN',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      letterSpacing: 1,
                     ),
-                    if (isAdmin) ...[
-                      const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Text(
-                          'ADMIN',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 1,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
+                  ),
+                )
+              else
+                const SizedBox(), // Empty space when not admin
               
               // Quick actions
               Row(

@@ -71,12 +71,14 @@ class AuthService {
           if (accessToken == null) {
           throw Exception('Access token not found in response');
         }
-        
-        // Usa TokenManager per salvare il token
+          // Usa TokenManager per salvare il token
         await TokenManager.saveToken(accessToken);
         if (refreshToken != null) {
           await _storage.write(key: 'refresh_token', value: refreshToken);
         }
+        
+        // Salva l'email dell'utente per uso futuro
+        await _storage.write(key: 'user_email', value: email);
         
         print('✅ Login successful!');
         return responseData;

@@ -46,24 +46,29 @@ class _DashboardScreenState extends State<DashboardScreen>
     
     _animations.startAnimations();
   }
-
   Future<void> _loadUserData() async {
     final isAdmin = await _authService.isUserAdmin();
     final userEmail = await _authService.getUserEmail();
+    final extractedName = _extractUserName(userEmail ?? '');
+    
+    print('DEBUG: userEmail = $userEmail');
+    print('DEBUG: extractedName = $extractedName');
     
     if (mounted) {
       setState(() {
         _isAdmin = isAdmin;
-        _userName = _extractUserName(userEmail ?? 'User');
+        _userName = extractedName;
       });
     }
   }
-
   String _extractUserName(String email) {
-    if (email.contains('@')) {
-      return email.split('@')[0];
+    if (email.isNotEmpty && email.contains('@')) {
+      String name = email.split('@')[0];
+      print('DEBUG: Extracted name "$name" from email "$email"');
+      return name;
     }
-    return email;
+    print('DEBUG: No valid email provided: "$email"');
+    return 'User'; // Fallback
   }
 
   @override
@@ -84,23 +89,16 @@ class _DashboardScreenState extends State<DashboardScreen>
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Header with user info and quick actions
+                children: [                  // Header with user info and quick actions
                   DashboardHeader(
-                    userName: _userName,
                     isAdmin: _isAdmin,
                     onLogout: () => LogoutDialog.show(context),
                   ),
                   
                   const SizedBox(height: 24),
-                    // Welcome Card
-                  _buildWelcomeCard(),
-                    const SizedBox(height: 24),
                   
-                  // Dashboard Clock
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  ),
+                  // Welcome Card
+                  _buildWelcomeCard(),
                   
                   const SizedBox(height: 32),
                   
@@ -174,11 +172,12 @@ class _DashboardScreenState extends State<DashboardScreen>
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Good ${_getGreeting()}!',
+                    children: [                      Text(
+                        _userName.isNotEmpty 
+                          ? 'Good ${_getGreeting()}, $_userName!'
+                          : 'Good ${_getGreeting()}!',
                         style: const TextStyle(
-                          fontSize: 22,
+                          fontSize: 20,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                           letterSpacing: -0.3,

@@ -70,17 +70,16 @@ class ServiceCard extends StatelessWidget {
                   spreadRadius: 1,
                 ),
             ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
+          ),          child: Padding(
+            padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Icon with gradient background
                 Container(
-                  width: 60,
-                  height: 60,
+                  width: 50,
+                  height: 50,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: isEnabled 
@@ -89,7 +88,7 @@ class ServiceCard extends StatelessWidget {
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(15),
                     boxShadow: [
                       BoxShadow(
                         color: (isEnabled ? gradientColors[0] : Colors.grey)
@@ -104,57 +103,52 @@ class ServiceCard extends StatelessWidget {
                         offset: const Offset(0, -2),
                       ),
                     ],
-                  ),
-                  child: Icon(
+                  ),                  child: Icon(
                     icon,
                     color: Colors.white,
-                    size: 30,
+                    size: 26,
                   ),
-                ),
-                
-                const SizedBox(height: 16),
+                ),                
+                const SizedBox(height: 12),
                 
                 // Title - with overflow protection
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 16,
+                    fontSize: 15,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
-                    height: 1.2,
+                    height: 1.1,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 
-                const SizedBox(height: 6),
-                
-                // Description - with overflow protection
+                const SizedBox(height: 4),                // Description - with overflow protection
                 Flexible(
                   child: Text(
                     description,
                     style: TextStyle(
-                      fontSize: 13,
+                      fontSize: 12,
                       color: Colors.grey[400],
-                      height: 1.3,
+                      height: 1.2,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
                 
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 
                 // Action indicator
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    if (!isEnabled)
-                      Flexible(
+                    if (!isEnabled)                        Flexible(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 6,
+                            vertical: 3,
                           ),
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
@@ -168,11 +162,10 @@ class ServiceCard extends StatelessWidget {
                               color: Colors.orange.withValues(alpha: 0.4),
                               width: 0.5,
                             ),
-                          ),
-                          child: Text(
+                          ),                          child: Text(
                             'Admin Only',
                             style: TextStyle(
-                              fontSize: 10,
+                              fontSize: 9,
                               color: Colors.orange[300],
                               fontWeight: FontWeight.w600,
                             ),
@@ -182,9 +175,8 @@ class ServiceCard extends StatelessWidget {
                         ),
                       )
                     else
-                      const SizedBox(),
-                    Container(
-                      padding: const EdgeInsets.all(6),
+                      const SizedBox(),                    Container(
+                      padding: const EdgeInsets.all(5),
                       decoration: BoxDecoration(
                         color: Colors.white.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
@@ -195,11 +187,10 @@ class ServiceCard extends StatelessWidget {
                             offset: const Offset(0, 2),
                           ),
                         ],
-                      ),
-                      child: Icon(
+                      ),                      child: Icon(
                         Icons.arrow_forward_ios_rounded,
                         color: Colors.grey[300],
-                        size: 14,
+                        size: 12,
                       ),
                     ),
                   ],

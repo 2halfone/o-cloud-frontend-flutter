@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'service_card.dart';
+import 'responsive_service_card.dart';
 import '../../screens/admin_logs_screen.dart';
 import '../../screens/user_detail_screen.dart';
 
@@ -27,105 +27,89 @@ class ServiceGrid extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: isAdmin 
-            ? GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-                childAspectRatio: 0.9,
-                children: _buildServiceCards(context),
-              )
-            : Column(
-                children: [
-                  // Per utenti normali, mostra solo User Service in un layout centrato
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: _buildServiceCards(context).first,
-                  ),
-                  const SizedBox(height: 24),
-                  // Messaggio informativo per utenti normali
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    margin: const EdgeInsets.symmetric(horizontal: 32.0),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.blue.withValues(alpha: 0.3),
-                        width: 1,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: Colors.blue[300],
-                          size: 20,
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Text(
-                            'Additional services are available for administrators',
-                            style: TextStyle(
-                              color: Colors.blue[300],
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
+        const SizedBox(height: 16),        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),          child: GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 2,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 1.0,
+            children: _buildServiceCards(context),
+          ),
         ),
       ],
     );
   }
-
   List<Widget> _buildServiceCards(BuildContext context) {
-    List<Widget> cards = [
-      // User Service - sempre visibile per tutti
-      ServiceCard(
-        title: 'User Service',
-        description: 'Manage user accounts',
-        icon: Icons.people_rounded,
+    List<Widget> cards = [      // Account Service - sempre visibile per tutti
+      ResponsiveServiceCard(
+        title: 'Account',
+        description: 'Manage your account',
+        icon: Icons.person_rounded,
         gradientColors: const [Color(0xFF667eea), Color(0xFF764ba2)],
         onTap: () => _navigateToUserService(context),
+        isEnabled: true,
+      ),
+        // Chat Service - visibile per tutti
+      ResponsiveServiceCard(
+        title: 'Chat Service',
+        description: 'Real-time messaging',
+        icon: Icons.chat_rounded,
+        gradientColors: const [Color(0xFF667eea), Color(0xFF764ba2)],
+        onTap: () => _navigateToChatService(context),
+        isEnabled: true,
+      ),
+        // Shop - visibile per tutti
+      ResponsiveServiceCard(
+        title: 'Shop',
+        description: 'Online marketplace',
+        icon: Icons.store_rounded,
+        gradientColors: const [Color(0xFF4facfe), Color(0xFF00f2fe)],
+        onTap: () => _navigateToShop(context),
+        isEnabled: true,
+      ),
+        // Events - visibile per tutti
+      ResponsiveServiceCard(
+        title: 'Events',
+        description: 'Event management',
+        icon: Icons.event_rounded,
+        gradientColors: const [Color(0xFFf093fb), Color(0xFFf5576c)],
+        onTap: () => _navigateToEvents(context),
+        isEnabled: true,
+      ),
+        // Calendar - visibile per tutti
+      ResponsiveServiceCard(
+        title: 'Calendar',
+        description: 'Schedule & planning',
+        icon: Icons.calendar_today_rounded,
+        gradientColors: const [Color(0xFFa8edea), Color(0xFFfed6e3)],
+        onTap: () => _navigateToCalendar(context),
         isEnabled: true,
       ),
     ];
 
     // Servizi aggiuntivi solo per admin
-    if (isAdmin) {
-      cards.addAll([
-        ServiceCard(
+    if (isAdmin) {      cards.addAll([
+        ResponsiveServiceCard(
           title: 'Analytics',
           description: 'System logs & analytics',
           icon: Icons.analytics_rounded,
-          gradientColors: const [Color(0xFFf093fb), Color(0xFFf5576c)],
+          gradientColors: const [Color(0xFFffecd2), Color(0xFFfcb69f)],
           onTap: () => _navigateToAnalytics(context),
-          isEnabled: true,
-        ),
-        ServiceCard(
+          isEnabled: true,        ),
+        ResponsiveServiceCard(
           title: 'Cloud Storage',
           description: 'File management',
           icon: Icons.cloud_upload_rounded,
-          gradientColors: const [Color(0xFF4facfe), Color(0xFF00f2fe)],
+          gradientColors: const [Color(0xFF89f7fe), Color(0xFF66a6ff)],
           onTap: () => _navigateToCloudStorage(context),
-          isEnabled: true,
-        ),
-        ServiceCard(
+          isEnabled: true,        ),
+        ResponsiveServiceCard(
           title: 'Security',
           description: 'Security monitoring',
           icon: Icons.security_rounded,
-          gradientColors: const [Color(0xFFa8edea), Color(0xFFfed6e3)],
+          gradientColors: const [Color(0xFFfbc2eb), Color(0xFFa6c1ee)],
           onTap: () => _navigateToSecurity(context),
           isEnabled: true,
         ),
@@ -134,7 +118,6 @@ class ServiceGrid extends StatelessWidget {
 
     return cards;
   }
-
   void _navigateToUserService(BuildContext context) {
     Navigator.push(
       context,
@@ -142,6 +125,22 @@ class ServiceGrid extends StatelessWidget {
         builder: (context) => const UserDetailScreen(userId: 'current_user'),
       ),
     );
+  }
+
+  void _navigateToChatService(BuildContext context) {
+    _showComingSoonDialog(context, 'Chat Service');
+  }
+
+  void _navigateToShop(BuildContext context) {
+    _showComingSoonDialog(context, 'Shop');
+  }
+
+  void _navigateToEvents(BuildContext context) {
+    _showComingSoonDialog(context, 'Events');
+  }
+
+  void _navigateToCalendar(BuildContext context) {
+    _showComingSoonDialog(context, 'Calendar');
   }
 
   void _navigateToAnalytics(BuildContext context) {
