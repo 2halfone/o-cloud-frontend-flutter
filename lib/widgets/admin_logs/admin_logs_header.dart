@@ -142,9 +142,8 @@ class _AdminLogsHeaderState extends State<AdminLogsHeader> {
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 20),
-          // Messaggio di benvenuto personalizzato
+          ),          const SizedBox(height: 20),
+          // Personalized welcome message
           Text(
             _userName.isNotEmpty 
               ? 'Good ${_getGreeting()}, $_userName!'

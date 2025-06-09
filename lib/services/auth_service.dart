@@ -5,9 +5,8 @@ import 'package:jwt_decoder/jwt_decoder.dart';
 import '../utils/token_manager.dart';
 
 class AuthService {
-  static const String _baseUrl = 'http://34.140.122.146';
-  static const FlutterSecureStorage _storage = FlutterSecureStorage();
-  Future<void> register(String email, String password) async {
+  static const String _baseUrl = 'http://34.140.122.146:3000'; // Gateway
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();Future<void> register(String email, String password, String name, String surname) async {
     try {
       final response = await http.post(
         Uri.parse('$_baseUrl/auth/register'),
@@ -18,7 +17,8 @@ class AuthService {
         body: jsonEncode({
           'email': email,
           'password': password,
-          // ❌ NON inviamo il campo 'name' - il backend lo genererà automaticamente
+          'name': name,
+          'surname': surname,
         }),
       ).timeout(const Duration(seconds: 10));
 
@@ -53,13 +53,13 @@ class AuthService {
           if (accessToken == null) {
           throw Exception('Access token not found in response');
         }
-          // Usa TokenManager per salvare il token
+          // Use TokenManager to save the token
         await TokenManager.saveToken(accessToken);
         if (refreshToken != null) {
           await _storage.write(key: 'refresh_token', value: refreshToken);
         }
         
-        // Salva l'email dell'utente per uso futuro
+        // Save user email for future use
         await _storage.write(key: 'user_email', value: email);
         
         return responseData;
@@ -70,7 +70,7 @@ class AuthService {
       throw Exception('Login failed: $e');
     }
   }
-  // Metodo per richieste autorizzate con auto-refresh
+  // Method for authorized requests with auto-refresh
   Future<http.Response> makeAuthorizedRequest(
     String method,
     String endpoint,
@@ -100,11 +100,11 @@ class AuthService {
       default:
         throw Exception('Unsupported HTTP method: $method');
     }
-      // Gestione automatica del rinnovo token su 401
+      // Automatic token refresh handling on 401
     if (response.statusCode == 401 && accessToken != null) {
       final refreshed = await _refreshToken();
       if (refreshed) {
-        // Ripeti la richiesta una sola volta con il nuovo token
+        // Retry the request only once with the new token
         final newAccessToken = await TokenManager.getToken();
         headers['Authorization'] = 'Bearer $newAccessToken';
         
@@ -121,7 +121,7 @@ class AuthService {
             break;
         }
       } else {
-        // Fallback a logout su errori persistenti
+        // Fallback to logout on persistent errors
         await logout();
         throw Exception('Session expired. Please login again.');
       }
@@ -130,7 +130,7 @@ class AuthService {
     return response;
   }
 
-  // Rinnovo automatico token su 401
+  // Automatic token refresh on 401
   Future<bool> _refreshToken() async {
     try {
       final refreshToken = await _storage.read(key: 'refresh_token');
@@ -160,7 +160,7 @@ class AuthService {
     }
   }
   Future<void> logout() async {
-    // Rimuovi tutti i token e dati utente
+    // Remove all tokens and user data
     await TokenManager.deleteToken();
     await _storage.delete(key: 'refresh_token');
     await _storage.delete(key: 'user_id');
@@ -170,7 +170,7 @@ class AuthService {
     final accessToken = await TokenManager.getToken();
     if (accessToken == null) return false;
     
-    // Verifica se il token è ancora valido
+    // Check if the token is still valid
     try {
       return !JwtDecoder.isExpired(accessToken);
     } catch (e) {
@@ -178,7 +178,7 @@ class AuthService {
     }
   }
   
-  // Metodi helper per accedere ai dati utente
+  // Helper methods to access user data
   Future<String?> getUserId() async {
     return await _storage.read(key: 'user_id');
   }
@@ -188,40 +188,68 @@ class AuthService {
   }    Future<String?> getAccessToken() async {
     return await TokenManager.getToken();
   }
-    // Metodo per verificare se l'utente è admin decodificando il JWT token
+    // Method to check if user is admin by decoding the JWT token
   Future<bool> isUserAdmin() async {
     try {
       final accessToken = await TokenManager.getToken();
       if (accessToken == null) return false;
       
-      // Decodifica il JWT token per accedere ai claims
+      // Decode the JWT token to access claims
       final decodedToken = JwtDecoder.decode(accessToken);
       
-      // Controlla se l'utente ha il ruolo admin
-      // Il campo può essere 'role', 'roles', 'user_type', o 'is_admin' a seconda del backend
-      final role = decodedToken['role'] ?? decodedToken['user_type'] ?? decodedToken['is_admin'];
+      // 🔍 DEBUG: Print the entire token for investigation
+      print('🔍 JWT Token Debug:');
+      print('Token: ${decodedToken.toString()}');
+        // Check if the user has admin role - STRICT VALIDATION
+      // Only these specific fields should be checked for admin status
+      final role = decodedToken['role']; 
+      final userType = decodedToken['user_type'];
+      final isAdmin = decodedToken['is_admin'];
       final roles = decodedToken['roles'] as List<dynamic>?;
       
-      // Verifica diversi formati possibili per il ruolo admin
+      print('🔍 Role field: $role');
+      print('🔍 User type field: $userType');
+      print('🔍 Is admin field: $isAdmin');
+      print('🔍 Roles array: $roles');
+      
+      // Check role field for string values
       if (role is String && (role.toLowerCase() == 'admin' || role.toLowerCase() == 'administrator')) {
+        print('🔍 ✅ Admin detected via role string: $role');
         return true;
       }
       
-      if (role is bool && role == true) {
+      // Check user_type field for string values  
+      if (userType is String && (userType.toLowerCase() == 'admin' || userType.toLowerCase() == 'administrator')) {
+        print('🔍 ✅ Admin detected via user_type string: $userType');
         return true;
       }
       
+      // Check is_admin field for boolean values
+      if (isAdmin is bool && isAdmin == true) {
+        print('🔍 ✅ Admin detected via is_admin boolean: $isAdmin');
+        return true;
+      }
+      
+      // Check roles array
       if (roles != null && roles.any((r) => r.toString().toLowerCase() == 'admin')) {
+        print('🔍 ✅ Admin detected via roles array: $roles');
         return true;
       }
-      
-      // Controlla anche nell'email se contiene 'admin'
+        // 🚫 RIMUOVIAMO questo controllo email - causa falsi positivi
+      // Gli utenti con email che contengono 'admin' non dovrebbero automaticamente diventare admin
+      // Solo il campo 'role' nel JWT dovrebbe determinare i permessi
       final email = decodedToken['email'] ?? decodedToken['sub'];
-      if (email is String && email.toLowerCase().contains('admin')) {
-        return true;
-      }
-        return false;
+      print('🔍 Email field: $email (but not using for admin detection)');
+      
+      // 🚫 COMMENTED OUT: if (email is String && email.toLowerCase().contains('admin')) {
+      //   print('🔍 Admin detected via email contains admin: $email');
+      //   return true;
+      // }
+      
+      print('🔍 No admin role detected - returning false');
+      return false;
     } catch (e) {
+      print('🔍 Error in isUserAdmin: $e');
       return false;
     }
   }

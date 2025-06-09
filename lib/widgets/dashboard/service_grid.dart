@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'responsive_service_card.dart';
 import '../../screens/admin_logs_screen.dart';
-import '../../screens/user_detail_screen.dart';
+import '../../screens/qr_scanner_screen.dart';
+import '../../screens/admin_qr_page.dart';
 
 class ServiceGrid extends StatelessWidget {
   final bool isAdmin;
@@ -42,16 +43,16 @@ class ServiceGrid extends StatelessWidget {
     );
   }
   List<Widget> _buildServiceCards(BuildContext context) {
-    List<Widget> cards = [      // Account Service - sempre visibile per tutti
+    List<Widget> cards = [      // QR Scanner - always visible for everyone
       ResponsiveServiceCard(
-        title: 'Account',
-        description: 'Manage your account',
-        icon: Icons.person_rounded,
+        title: 'QR Scanner',
+        description: 'Scan QR for attendance',
+        icon: Icons.qr_code_scanner,
         gradientColors: const [Color(0xFF667eea), Color(0xFF764ba2)],
-        onTap: () => _navigateToUserService(context),
+        onTap: () => _navigateToQRScanner(context),
         isEnabled: true,
       ),
-        // Chat Service - visibile per tutti
+        // Chat Service - visible for everyone
       ResponsiveServiceCard(
         title: 'Chat Service',
         description: 'Real-time messaging',
@@ -60,7 +61,7 @@ class ServiceGrid extends StatelessWidget {
         onTap: () => _navigateToChatService(context),
         isEnabled: true,
       ),
-        // Shop - visibile per tutti
+        // Shop - visible for everyone
       ResponsiveServiceCard(
         title: 'Shop',
         description: 'Online marketplace',
@@ -69,7 +70,7 @@ class ServiceGrid extends StatelessWidget {
         onTap: () => _navigateToShop(context),
         isEnabled: true,
       ),
-        // Events - visibile per tutti
+        // Events - visible for everyone
       ResponsiveServiceCard(
         title: 'Events',
         description: 'Event management',
@@ -78,7 +79,7 @@ class ServiceGrid extends StatelessWidget {
         onTap: () => _navigateToEvents(context),
         isEnabled: true,
       ),
-        // Calendar - visibile per tutti
+        // Calendar - visible for everyone
       ResponsiveServiceCard(
         title: 'Calendar',
         description: 'Schedule & planning',
@@ -87,10 +88,16 @@ class ServiceGrid extends StatelessWidget {
         onTap: () => _navigateToCalendar(context),
         isEnabled: true,
       ),
-    ];
-
-    // Servizi aggiuntivi solo per admin
+    ];    // Additional services only for admin
     if (isAdmin) {      cards.addAll([
+        ResponsiveServiceCard(
+          title: 'QR Generator',
+          description: 'Generate QR codes',
+          icon: Icons.qr_code,
+          gradientColors: const [Color(0xFF667eea), Color(0xFF764ba2)],
+          onTap: () => _navigateToQRGenerator(context),
+          isEnabled: true,
+        ),
         ResponsiveServiceCard(
           title: 'Analytics',
           description: 'System logs & analytics',
@@ -117,12 +124,20 @@ class ServiceGrid extends StatelessWidget {
     }
 
     return cards;
-  }
-  void _navigateToUserService(BuildContext context) {
+  }  void _navigateToQRScanner(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const UserDetailScreen(userId: 'current_user'),
+        builder: (context) => const QRScannerScreen(),
+      ),
+    );
+  }
+
+  void _navigateToQRGenerator(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AdminQrPage(),
       ),
     );
   }

@@ -16,6 +16,15 @@ dependencies:
   provider: ^6.1.0
   json_annotation: ^4.9.0
   jwt_decoder: ^2.0.1
+  qr_code_scanner: ^1.0.1
+  qr_flutter: ^4.1.0
+  image_picker: ^1.0.4
+  permission_handler: ^11.0.1
+  share_plus: ^7.2.1
+  path_provider: ^2.1.1
+  image_gallery_saver: ^2.0.3
+  url_launcher: ^6.2.2
+  qr_code_tools: ^0.2.0
 
 dev_dependencies:
   flutter_test:

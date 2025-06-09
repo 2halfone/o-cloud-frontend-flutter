@@ -11,9 +11,12 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
+  final _nameController = TextEditingController();
+  final _surnameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-  final _confirmPasswordController = TextEditingController();  final _authService = AuthService();
+  final _confirmPasswordController = TextEditingController();
+  final _authService = AuthService();
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -45,10 +48,11 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
     
     _animationController.forward();
   }
-  
-  @override
+    @override
   void dispose() {
     _animationController.dispose();
+    _nameController.dispose();
+    _surnameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -57,10 +61,17 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
-    setState(() => _isLoading = true);
-
-    try {
+    setState(() => _isLoading = true);    try {      // 🔄 STEP 1: Register the user
       await _authService.register(
+        _emailController.text,
+        _passwordController.text,
+        _nameController.text,
+        _surnameController.text,
+      );
+      
+      // 🔄 STEP 2: Automatically login after successful registration to get JWT token
+      // This ensures proper role-based authentication and admin detection
+      await _authService.login(
         _emailController.text,
         _passwordController.text,
       );
@@ -74,23 +85,25 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
             duration: Duration(seconds: 2),
           ),
         );
-        
-        // Vai direttamente alla dashboard invece che al login
-        final userName = _emailController.text.split('@')[0];
+          // 🔄 STEP 3: Navigate to dashboard with proper JWT token in place
+        // Now isUserAdmin() will work correctly because we have a valid JWT token
+        final fullName = '${_nameController.text} ${_surnameController.text}';
         
         Navigator.pushReplacementNamed(
           context, 
           '/dashboard',
           arguments: {
-            'user_id': _emailController.text, // Usa email come identificativo temporaneo
-            'user_name': userName,  // Nome estratto dall'email
+            'user_id': _emailController.text, // Use email as temporary identifier
+            'user_name': fullName,  // Use provided name and surname
+            'first_name': _nameController.text,
+            'last_name': _surnameController.text,
             'is_new_user': true,
           },
         );
       }
     } catch (e) {
       if (mounted) {
-        // Gestione errori migliorata
+        // Improved error handling
         String errorMessage;
         if (e.toString().contains('USER_EXISTS') || e.toString().contains('409')) {
           errorMessage = 'Email already registered. Please use a different email or sign in.';
@@ -220,13 +233,38 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         ),
       ),
     );
-  }
-  Widget _buildRegisterForm() {
+  }  Widget _buildRegisterForm() {
     return Form(
       key: _formKey,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          CustomTextField(
+            controller: _nameController,
+            labelText: 'Name',
+            keyboardType: TextInputType.name,
+            icon: Icons.person_outline,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your name';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
+          CustomTextField(
+            controller: _surnameController,
+            labelText: 'Surname',
+            keyboardType: TextInputType.name,
+            icon: Icons.person_outline,
+            validator: (value) {
+              if (value == null || value.isEmpty) {
+                return 'Please enter your surname';
+              }
+              return null;
+            },
+          ),
+          const SizedBox(height: 16),
           CustomTextField(
             controller: _emailController,
             labelText: 'Email',

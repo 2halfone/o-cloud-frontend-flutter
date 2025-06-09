@@ -5,7 +5,7 @@ import '../utils/token_manager.dart';
 
 class LogService {
   static const String _baseUrl = 'http://34.140.122.146:3000'; // ✅ IP AGGIORNATO
-    /// Recupera i log di autenticazione
+    /// Retrieve authentication logs
   Future<AuthLogsResponse?> getAuthLogs({
     int page = 1,
     int limit = 50,
@@ -50,7 +50,7 @@ class LogService {
       rethrow;
     }
   }
-  /// Refresh dei log (chiamata diretta per aggiornamento)
+  /// Refresh logs (direct call for update)
   Future<AuthLogsResponse?> refreshLogs({
     int page = 1,
     int limit = 50,
@@ -58,13 +58,13 @@ class LogService {
     return await getAuthLogs(page: page, limit: limit);
   }
 
-  /// Verifica se l'utente può accedere ai log (è admin)
+  /// Check if user can access logs (is admin)
   Future<bool> canAccessLogs() async {
     try {
       final token = await TokenManager.getToken();
       if (token == null) return false;
 
-      // Prova a fare una richiesta rapida per verificare i permessi
+      // Try making a quick request to verify permissions
       final url = Uri.parse('$_baseUrl/admin/auth-logs')
           .replace(queryParameters: {'page': '1', 'limit': '1'});
 

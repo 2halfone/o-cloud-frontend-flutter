@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/user.dart';
 import '../utils/constants.dart';
 
-class UserService {  // ✅ Usa ApiConstants invece di userBaseUrl non definito
+class UserService {  // ✅ Uses ApiConstants instead of undefined userBaseUrl
   static const String _baseUrl = ApiConstants.userBaseUrl;
 
   Future<List<User>> getUsers() async {
@@ -33,7 +33,7 @@ class UserService {  // ✅ Usa ApiConstants invece di userBaseUrl non definito
     }
   }
 
-  // ✅ Aggiungi alias per compatibilità con UserDetailScreen
+  // ✅ Add alias for compatibility with UserDetailScreen
   Future<User> fetchUser(String id) async {
     return getUserById(id);
   }

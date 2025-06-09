@@ -7,11 +7,10 @@ class ApiConstants {
   // Endpoints
   static const String loginEndpoint = '/auth/login';
   static const String registerEndpoint = '/auth/register';
-  static const String refreshEndpoint = '/auth/refresh';
-  static const String adminLogsEndpoint = '/admin/auth-logs';
+  static const String refreshEndpoint = '/auth/refresh';  static const String adminLogsEndpoint = '/admin/auth-logs';
 }
 
-// ✅ Aggiungi queste costanti per compatibilità con UserService
+// Add these constants for compatibility with UserService
 const String userBaseUrl = ApiConstants.userBaseUrl;
 const String authBaseUrl = ApiConstants.authBaseUrl;
 const String baseUrl = ApiConstants.baseUrl;

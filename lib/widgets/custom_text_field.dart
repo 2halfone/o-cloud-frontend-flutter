@@ -6,7 +6,7 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
-  final IconData? icon;  // ✅ Questo è il parametro corretto
+  final IconData? icon;  // ✅ This is the correct parameter
 
   const CustomTextField({
     super.key,

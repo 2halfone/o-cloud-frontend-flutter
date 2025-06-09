@@ -12,7 +12,8 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();  final _authService = AuthService();
+  final _passwordController = TextEditingController();
+  final _authService = AuthService();
   bool _isLoading = false;
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
@@ -44,13 +45,13 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
     
     _animationController.forward();
   }
-  
   @override
   void dispose() {
     _animationController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
-  }
-  Future<void> _login() async {
+  }  Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isLoading = true);
@@ -62,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
       );
       
       if (mounted) {
-        // ✅ Estraggo il nome dall'email anche per il login
+        // Extract username from email for simple display
         final userName = _emailController.text.split('@')[0];
         
         Navigator.pushReplacementNamed(
@@ -70,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
           '/dashboard',
           arguments: {
             'user_id': _emailController.text,
-            'user_name': userName,  // ✅ Nome estratto dall'email
+            'user_name': userName,
             'is_new_user': false,
           },
         );
@@ -188,9 +189,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
         ),
       ),
     );
-  }
-
-  Widget _buildLoginForm() {
+  }  Widget _buildLoginForm() {
     return Form(
       key: _formKey,
       child: Column(
@@ -200,6 +199,7 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             controller: _emailController,
             labelText: 'Email',
             keyboardType: TextInputType.emailAddress,
+            icon: Icons.email_outlined,
             validator: (value) {
               if (value?.isEmpty ?? true) return 'Email is required';
               if (!value!.contains('@')) return 'Invalid email format';
@@ -211,11 +211,12 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             controller: _passwordController,
             labelText: 'Password',
             obscureText: true,
+            icon: Icons.lock_outlined,
             validator: (value) {
               if (value?.isEmpty ?? true) return 'Password is required';
               return null;
             },
-          ),          const SizedBox(height: 24),
+          ),const SizedBox(height: 24),
           Container(
             width: double.infinity,
             height: 48,

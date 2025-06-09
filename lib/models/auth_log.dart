@@ -1,7 +1,7 @@
 class AuthLog {
   final int id;
   final String userEmail;
-  final String? username; // ✅ Già nullable nella definizione
+  final String? username; // ✅ Already nullable in definition
   final String action;
   final String timestamp;
   final String ipAddress;
@@ -11,7 +11,7 @@ class AuthLog {
   AuthLog({
     required this.id,
     required this.userEmail,
-    this.username, // ✅ Già opzionale
+    this.username, // ✅ Already optional
     required this.action,
     required this.timestamp,
     required this.ipAddress,
@@ -23,7 +23,7 @@ class AuthLog {
     return AuthLog(
       id: json['id'] as int,
       userEmail: json['user_email'] as String,
-      username: json['username'] as String?, // ✅ QUESTO È IL FIX CRITICO
+      username: json['username'] as String?, // ✅ THIS IS THE CRITICAL FIX
       action: json['action'] as String,
       timestamp: json['timestamp'] as String,
       ipAddress: json['ip_address'] as String,
@@ -36,7 +36,7 @@ class AuthLog {
     return {
       'id': id,
       'user_email': userEmail,
-      'username': username, // ✅ Può essere null
+      'username': username, // ✅ Can be null
       'action': action,
       'timestamp': timestamp,
       'ip_address': ipAddress,
@@ -66,15 +66,15 @@ class AuthLog {
     }
   }
 
-  // Getter per display name - usa username se disponibile, altrimenti estrae dall'email
+  // Getter for display name - uses username if available, otherwise extracts from email
   String get displayName {
     if (username != null && username!.isNotEmpty) {
       return username!;
     }
-    // Estrae la parte prima della @ dall'email
+    // Extracts the part before @ from email
     return userEmail.split('@')[0];
   }
-  // Getter per informazioni complete di display
+  // Getter for complete display information
   String get fullDisplayInfo {
     return '$displayName ($userEmail)';
   }
