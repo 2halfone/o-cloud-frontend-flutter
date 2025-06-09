@@ -377,44 +377,39 @@ class _AttendanceFormState extends State<AttendanceForm>
         ),
       ],
     );
-  }
-  IconData _getStatusIcon(AttendanceStatus status) {
+  }  IconData _getStatusIcon(AttendanceStatus status) {
     switch (status) {
       case AttendanceStatus.present:
         return Icons.check_circle;
-      case AttendanceStatus.vacation:
-        return Icons.beach_access;
       case AttendanceStatus.hospital:
         return Icons.local_hospital;
       case AttendanceStatus.family:
         return Icons.family_restroom;
-      case AttendanceStatus.sick:
-        return Icons.sick;
+      case AttendanceStatus.emergency:
+        return Icons.emergency;
+      case AttendanceStatus.vacancy:
+        return Icons.beach_access;
       case AttendanceStatus.personal:
         return Icons.person;
-      case AttendanceStatus.business:
-        return Icons.business_center;
-      case AttendanceStatus.other:
-        return Icons.more_horiz;
+      case AttendanceStatus.notRegistered:
+        return Icons.pending;
     }
   }
   Color _getStatusColor(AttendanceStatus status) {
     switch (status) {
       case AttendanceStatus.present:
         return Colors.green;
-      case AttendanceStatus.vacation:
-        return Colors.blue;
       case AttendanceStatus.hospital:
         return Colors.red;
       case AttendanceStatus.family:
         return Colors.purple;
-      case AttendanceStatus.sick:
-        return Colors.orange;
+      case AttendanceStatus.emergency:
+        return Colors.deepOrange;
+      case AttendanceStatus.vacancy:
+        return Colors.blue;
       case AttendanceStatus.personal:
         return Colors.cyan;
-      case AttendanceStatus.business:
-        return Colors.indigo;
-      case AttendanceStatus.other:
+      case AttendanceStatus.notRegistered:
         return Colors.grey;
     }
   }

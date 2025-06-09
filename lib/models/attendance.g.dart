@@ -33,14 +33,13 @@ Map<String, dynamic> _$AttendanceRequestToJson(AttendanceRequest instance) =>
     };
 
 const _$AttendanceStatusEnumMap = {
-  AttendanceStatus.present: 'presente',
-  AttendanceStatus.vacation: 'vacation',
+  AttendanceStatus.present: 'present',
   AttendanceStatus.hospital: 'hospital',
   AttendanceStatus.family: 'family',
-  AttendanceStatus.sick: 'sick',
+  AttendanceStatus.emergency: 'emergency',
+  AttendanceStatus.vacancy: 'vacancy',
   AttendanceStatus.personal: 'personal',
-  AttendanceStatus.business: 'business',
-  AttendanceStatus.other: 'other',
+  AttendanceStatus.notRegistered: 'not_registered',
 };
 
 AttendanceResponse _$AttendanceResponseFromJson(Map<String, dynamic> json) =>

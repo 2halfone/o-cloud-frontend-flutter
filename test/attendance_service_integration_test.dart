@@ -39,34 +39,33 @@ void main() {
     });    group('Status Helper Methods', () {
       test('should return correct status labels', () {
         expect(attendanceService.getStatusLabel(AttendanceStatus.present), equals('Present'));
-        expect(attendanceService.getStatusLabel(AttendanceStatus.vacation), equals('Vacation'));
         expect(attendanceService.getStatusLabel(AttendanceStatus.hospital), equals('Hospital'));
         expect(attendanceService.getStatusLabel(AttendanceStatus.family), equals('Family Reasons'));
-        expect(attendanceService.getStatusLabel(AttendanceStatus.sick), equals('Sick Leave'));
+        expect(attendanceService.getStatusLabel(AttendanceStatus.emergency), equals('Emergency'));
+        expect(attendanceService.getStatusLabel(AttendanceStatus.vacancy), equals('Vacancy'));
         expect(attendanceService.getStatusLabel(AttendanceStatus.personal), equals('Personal Reasons'));
-        expect(attendanceService.getStatusLabel(AttendanceStatus.business), equals('Business Trip'));
-        expect(attendanceService.getStatusLabel(AttendanceStatus.other), equals('Other'));
-      });      test('should return all available statuses', () {
+        expect(attendanceService.getStatusLabel(AttendanceStatus.notRegistered), equals('Not Registered'));
+      });      test('getAvailableStatuses should return correct statuses', () {
         final statuses = attendanceService.getAvailableStatuses();
-
-        expect(statuses.length, equals(8));
+        
+        expect(statuses, hasLength(5)); // Changed from 6 to 5
         expect(statuses, contains(AttendanceStatus.present));
-        expect(statuses, contains(AttendanceStatus.vacation));
         expect(statuses, contains(AttendanceStatus.hospital));
         expect(statuses, contains(AttendanceStatus.family));
-        expect(statuses, contains(AttendanceStatus.sick));
-        expect(statuses, contains(AttendanceStatus.personal));
-        expect(statuses, contains(AttendanceStatus.business));
-        expect(statuses, contains(AttendanceStatus.other));
+        expect(statuses, contains(AttendanceStatus.emergency));
+        expect(statuses, contains(AttendanceStatus.vacancy));
+        
+        // Should NOT contain these statuses
+        expect(statuses, isNot(contains(AttendanceStatus.personal)));
+        expect(statuses, isNot(contains(AttendanceStatus.notRegistered)));
       });      test('should correctly identify which statuses require motivation', () {
         expect(attendanceService.requiresMotivation(AttendanceStatus.present), isFalse);
-        expect(attendanceService.requiresMotivation(AttendanceStatus.vacation), isFalse);
         expect(attendanceService.requiresMotivation(AttendanceStatus.hospital), isFalse);
-        expect(attendanceService.requiresMotivation(AttendanceStatus.family), isTrue);
-        expect(attendanceService.requiresMotivation(AttendanceStatus.sick), isFalse);
+        expect(attendanceService.requiresMotivation(AttendanceStatus.family), isFalse); // No longer requires motivation
+        expect(attendanceService.requiresMotivation(AttendanceStatus.emergency), isFalse); // No longer requires motivation
+        expect(attendanceService.requiresMotivation(AttendanceStatus.vacancy), isFalse);
         expect(attendanceService.requiresMotivation(AttendanceStatus.personal), isFalse);
-        expect(attendanceService.requiresMotivation(AttendanceStatus.business), isFalse);
-        expect(attendanceService.requiresMotivation(AttendanceStatus.other), isFalse);
+        expect(attendanceService.requiresMotivation(AttendanceStatus.notRegistered), isFalse);
       });
     });
 
@@ -88,7 +87,7 @@ void main() {
         expect(json['qr_content'], isNotNull);
         expect(json['status'], equals('present'));
         expect(json['reason'], isNull);
-      });      test('should create valid attendance request for vacation with motivation', () {
+      });      test('should create valid attendance request for emergency with motivation', () {
         final qrContent = QRContent(
           jwt: 'sample_jwt_token',
           type: 'attendance',
@@ -97,15 +96,15 @@ void main() {
 
         final request = AttendanceRequest(
           qrContent: qrContent,
-          status: AttendanceStatus.vacation,
-          reason: 'Family vacation to Italy',
+          status: AttendanceStatus.emergency,
+          reason: 'Family emergency situation',
         );
 
         final json = request.toJson();
 
         expect(json['qr_content'], isNotNull);
-        expect(json['status'], equals('vacation'));
-        expect(json['reason'], equals('Family vacation to Italy'));
+        expect(json['status'], equals('emergency'));
+        expect(json['reason'], equals('Family emergency situation'));
       });
     });    group('Backend Connectivity', () {
       test('should handle API connectivity check with detailed logging', () async {

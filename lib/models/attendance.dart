@@ -3,22 +3,26 @@ import 'package:json_annotation/json_annotation.dart';
 part 'attendance.g.dart';
 
 enum AttendanceStatus {
-  @JsonValue('presente')
+  @JsonValue('present')
   present,
-  @JsonValue('vacation')
-  vacation,
+  
   @JsonValue('hospital')
   hospital,
+  
   @JsonValue('family')
   family,
-  @JsonValue('sick')
-  sick,
+  
+  @JsonValue('emergency')
+  emergency,
+  
+  @JsonValue('vacancy')
+  vacancy,
+  
   @JsonValue('personal')
   personal,
-  @JsonValue('business')
-  business,
-  @JsonValue('other')
-  other,
+  
+  @JsonValue('not_registered')
+  notRegistered,
 }
 
 @JsonSerializable()

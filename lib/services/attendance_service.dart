@@ -289,34 +289,38 @@ class AttendanceService {
       print('Error parsing QR content: $e');
       return null;
     }
-  }
-  // Helper method to get status labels for UI
+  }  // Helper method to get status labels for UI
   String getStatusLabel(AttendanceStatus status) {
     switch (status) {
       case AttendanceStatus.present:
         return 'Present';
-      case AttendanceStatus.vacation:
-        return 'Vacation';
       case AttendanceStatus.hospital:
         return 'Hospital';
       case AttendanceStatus.family:
         return 'Family Reasons';
-      case AttendanceStatus.sick:
-        return 'Sick Leave';
+      case AttendanceStatus.emergency:
+        return 'Emergency';
+      case AttendanceStatus.vacancy:
+        return 'Vacancy';
       case AttendanceStatus.personal:
         return 'Personal Reasons';
-      case AttendanceStatus.business:
-        return 'Business Trip';
-      case AttendanceStatus.other:
-        return 'Other';
+      case AttendanceStatus.notRegistered:
+        return 'Not Registered';
     }
   }
-
   // Get list of available status options
   List<AttendanceStatus> getAvailableStatuses() {
-    return AttendanceStatus.values;
+    return [
+      AttendanceStatus.present,
+      AttendanceStatus.hospital,
+      AttendanceStatus.family,
+      AttendanceStatus.emergency,
+      AttendanceStatus.vacancy,
+      // Removed: AttendanceStatus.personal (not shown to users)
+      // Removed: AttendanceStatus.notRegistered (internal use only)
+    ];
   }  // Check if status requires family reason
   bool requiresMotivation(AttendanceStatus status) {
-    return status == AttendanceStatus.family;
+    return false; // No statuses require motivation text input
   }
 }

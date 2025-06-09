@@ -42,9 +42,8 @@ void main() {
       // Verify header
       expect(find.text('Register Attendance'), findsOneWidget);
       expect(find.text('Confirm your attendance today'), findsOneWidget);
-      
-      // Verify QR data display
-      expect(find.text('QR Code Scanned:'), findsOneWidget);
+        // Verify QR data display
+      expect(find.text('✓ QR Code Verified'), findsOneWidget);
       
       // Verify status selection
       expect(find.text('Attendance Status'), findsOneWidget);
@@ -76,18 +75,15 @@ void main() {
 
       // Verify cancel was called
       expect(wasCancelled, isTrue);
-    });
-
-    test('AttendanceStatus enum should have correct values', () {
+    });    test('AttendanceStatus enum should have correct values', () {
       expect(AttendanceStatus.present.toString(), 'AttendanceStatus.present');
-      expect(AttendanceStatus.vacation.toString(), 'AttendanceStatus.vacation');
       expect(AttendanceStatus.hospital.toString(), 'AttendanceStatus.hospital');
       expect(AttendanceStatus.family.toString(), 'AttendanceStatus.family');
-      expect(AttendanceStatus.sick.toString(), 'AttendanceStatus.sick');
+      expect(AttendanceStatus.emergency.toString(), 'AttendanceStatus.emergency');
+      expect(AttendanceStatus.vacancy.toString(), 'AttendanceStatus.vacancy');
       expect(AttendanceStatus.personal.toString(), 'AttendanceStatus.personal');
-      expect(AttendanceStatus.business.toString(), 'AttendanceStatus.business');
-      expect(AttendanceStatus.other.toString(), 'AttendanceStatus.other');
-    });    test('QRContent should serialize correctly', () {
+      expect(AttendanceStatus.notRegistered.toString(), 'AttendanceStatus.notRegistered');
+    });test('QRContent should serialize correctly', () {
       final qrContent = QRContent(
         jwt: 'test.jwt.token',
         type: 'attendance',
@@ -115,10 +111,8 @@ void main() {
       final request = AttendanceRequest(
         qrContent: qrContent,
         status: AttendanceStatus.present,
-      );
-
-      final json = request.toJson();
-      expect(json['qr_content'], isA<Map<String, dynamic>>());
+      );      final json = request.toJson();
+      expect(json['qr_content'], isA<QRContent>());
       expect(json['status'], 'present');
       expect(json['reason'], isNull);
 
@@ -133,18 +127,14 @@ void main() {
         jwt: 'test.jwt.token',
         type: 'attendance',
         version: '1.0',
-      );
-
-      final request = AttendanceRequest(
+      );      final request = AttendanceRequest(
         qrContent: qrContent,
-        status: AttendanceStatus.sick,
-        reason: 'Sick leave',
-      );
-
-      final json = request.toJson();
-      expect(json['qr_content'], isA<Map<String, dynamic>>());
-      expect(json['status'], 'sick');
-      expect(json['reason'], 'Sick leave');
+        status: AttendanceStatus.emergency,
+        reason: 'Emergency leave',
+      );      final json = request.toJson();
+      expect(json['qr_content'], isA<QRContent>());
+      expect(json['status'], 'emergency');
+      expect(json['reason'], 'Emergency leave');
 
       final fromJson = AttendanceRequest.fromJson(json);
       expect(fromJson.qrContent.jwt, request.qrContent.jwt);

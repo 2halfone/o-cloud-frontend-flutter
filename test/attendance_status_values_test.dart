@@ -3,7 +3,7 @@ import 'package:go_cloud_backend/models/attendance.dart';
 
 void main() {
   group('AttendanceStatus JSON Values Tests', () {
-    test('should serialize AttendanceStatus.present as "presente"', () {
+    test('should serialize AttendanceStatus.present as "present"', () {
       final request = AttendanceRequest(
         qrContent: QRContent(
           jwt: 'test-jwt',
@@ -15,21 +15,17 @@ void main() {
       );
 
       final json = request.toJson();
-      expect(json['status'], equals('presente'));
+      expect(json['status'], equals('present'));
       
       print('✅ AttendanceStatus.present serializes to: ${json['status']}');
-    });
-
-    test('should have correct JSON values for all status types', () {
+    });    test('should have correct JSON values for all status types', () {
       final expectedValues = {
-        AttendanceStatus.present: 'presente',
-        AttendanceStatus.vacation: 'vacation',
+        AttendanceStatus.present: 'present',
         AttendanceStatus.hospital: 'hospital',
         AttendanceStatus.family: 'family',
-        AttendanceStatus.sick: 'sick',
+        AttendanceStatus.emergency: 'emergency',        AttendanceStatus.vacancy: 'vacancy',
         AttendanceStatus.personal: 'personal',
-        AttendanceStatus.business: 'business',
-        AttendanceStatus.other: 'other',
+        AttendanceStatus.notRegistered: 'not_registered',
       };
 
       for (final entry in expectedValues.entries) {
@@ -50,21 +46,20 @@ void main() {
     });
 
     test('should match backend expected values', () {
-      // These are the valid statuses from the backend error message
+      // These are the valid statuses from your backend
       final backendExpectedValues = [
-        "presente", "vacation", "hospital", "family", 
-        "sick", "personal", "business", "other"
+        "present", "hospital", "family", "emergency", 
+        "vacancy", "personal", "not_registered"
       ];
 
       final appStatusValues = [
         AttendanceStatus.present,
-        AttendanceStatus.vacation,
         AttendanceStatus.hospital,
         AttendanceStatus.family,
-        AttendanceStatus.sick,
+        AttendanceStatus.emergency,
+        AttendanceStatus.vacancy,
         AttendanceStatus.personal,
-        AttendanceStatus.business,
-        AttendanceStatus.other,
+        AttendanceStatus.notRegistered,
       ];
 
       for (int i = 0; i < appStatusValues.length; i++) {
