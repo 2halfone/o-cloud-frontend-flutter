@@ -28,14 +28,14 @@ class QRTestHelper extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          const Row(
             children: [
               Icon(
                 Icons.science,
                 color: Colors.blue,
                 size: 20,
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Text(
                 'QR Test Helper',
                 style: TextStyle(
@@ -103,7 +103,7 @@ class QRTestHelper extends StatelessWidget {
             Expanded(
               child: Text(
                 title,
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.w500,
                 ),
@@ -122,18 +122,18 @@ class QRTestHelper extends StatelessWidget {
 
   String _generateValidJWT() {
     // Simulated valid JWT structure for testing
-    final header = '{"alg":"HS256","typ":"JWT"}';
-    final payload = '{"user_id":"12345","exp":${DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000},"iat":${DateTime.now().millisecondsSinceEpoch ~/ 1000}}';
-    final signature = 'fake_signature_for_testing';
+    const header = '{"alg":"HS256","typ":"JWT"}';
+    final payload = '{"user_id":"12345","exp":${DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000},"iat":${DateTime.now().millisecondsSinceEpoch ~/ 1000}}';
+    const signature = 'fake_signature_for_testing';
     
     return '{"token":"$header.$payload.$signature","user_id":"12345","timestamp":"${DateTime.now().toIso8601String()}"}';
   }
 
   String _generateExpiredJWT() {
     // Simulated expired JWT structure for testing
-    final header = '{"alg":"HS256","typ":"JWT"}';
-    final payload = '{"user_id":"12345","exp":${DateTime.now().subtract(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000},"iat":${DateTime.now().subtract(Duration(hours: 2)).millisecondsSinceEpoch ~/ 1000}}';
-    final signature = 'fake_signature_for_testing';
+    const header = '{"alg":"HS256","typ":"JWT"}';
+    final payload = '{"user_id":"12345","exp":${DateTime.now().subtract(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000},"iat":${DateTime.now().subtract(const Duration(hours: 2)).millisecondsSinceEpoch ~/ 1000}}';
+    const signature = 'fake_signature_for_testing';
     
     return '{"token":"$header.$payload.$signature","user_id":"12345","timestamp":"${DateTime.now().toIso8601String()}"}';
   }

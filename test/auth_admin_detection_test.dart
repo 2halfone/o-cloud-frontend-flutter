@@ -8,7 +8,7 @@ void main() {
     });
 
     test('should decode admin JWT token correctly', () {
-      final testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIFVzZXIiLCJpYXQiOjE1MTYyMzkwMjIsInJvbGUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20ifQ.rHgUiZp6AKlQYKaJ8F7GixNhb3FLZYzWzJG9-4WgmGo';
+      const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIFVzZXIiLCJpYXQiOjE1MTYyMzkwMjIsInJvbGUiOiJhZG1pbiIsImVtYWlsIjoiYWRtaW5AZXhhbXBsZS5jb20ifQ.rHgUiZp6AKlQYKaJ8F7GixNhb3FLZYzWzJG9-4WgmGo';
       
       final decodedToken = JwtDecoder.decode(testToken);
       expect(decodedToken['role'], 'admin');
@@ -16,7 +16,7 @@ void main() {
     });
 
     test('should decode user JWT token correctly', () {
-      final testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlJlZ3VsYXIgVXNlciIsImlhdCI6MTUxNjIzOTAyMiwicm9sZSI6InVzZXIiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20ifQ.8PuVXHdSPq4A_T4UQOt-GJrJJhZpk3XgNMGrBj4HmkM';
+      const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IlJlZ3VsYXIgVXNlciIsImlhdCI6MTUxNjIzOTAyMiwicm9sZSI6InVzZXIiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20ifQ.8PuVXHdSPq4A_T4UQOt-GJrJJhZpk3XgNMGrBj4HmkM';
       
       final decodedToken = JwtDecoder.decode(testToken);
       expect(decodedToken['role'], 'user');
@@ -24,7 +24,7 @@ void main() {
     });
 
     test('should identify user with admin email but user role', () {
-      final testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIE5hbWUgVXNlciIsImlhdCI6MTUxNjIzOTAyMiwicm9sZSI6InVzZXIiLCJlbWFpbCI6ImFkbWludXNlckBleGFtcGxlLmNvbSJ9.y8gFZHw4VbJL_qRX8nYe9UQvFXMr6TZNjJhXPGNi-do';
+      const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIE5hbWUgVXNlciIsImlhdCI6MTUxNjIzOTAyMiwicm9sZSI6InVzZXIiLCJlbWFpbCI6ImFkbWludXNlckBleGFtcGxlLmNvbSJ9.y8gFZHw4VbJL_qRX8nYe9UQvFXMr6TZNjJhXPGNi-do';
       
       final decodedToken = JwtDecoder.decode(testToken);
       expect(decodedToken['role'], 'user');

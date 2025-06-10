@@ -3,6 +3,7 @@ import 'responsive_service_card.dart';
 import '../../screens/admin_logs_screen.dart';
 import '../../screens/qr_scanner_screen.dart';
 import '../../screens/admin_qr_page.dart';
+import '../../screens/admin_events_monitor_screen.dart';
 
 class ServiceGrid extends StatelessWidget {
   final bool isAdmin;
@@ -89,8 +90,7 @@ class ServiceGrid extends StatelessWidget {
         isEnabled: true,
       ),
     ];    // Additional services only for admin
-    if (isAdmin) {      cards.addAll([
-        ResponsiveServiceCard(
+    if (isAdmin) {      cards.addAll([        ResponsiveServiceCard(
           title: 'QR Generator',
           description: 'Generate QR codes',
           icon: Icons.qr_code,
@@ -99,12 +99,21 @@ class ServiceGrid extends StatelessWidget {
           isEnabled: true,
         ),
         ResponsiveServiceCard(
+          title: 'Events Monitor',
+          description: 'Monitor attendance events',
+          icon: Icons.monitor_heart_rounded,
+          gradientColors: const [Color(0xFF11998e), Color(0xFF38ef7d)],
+          onTap: () => _navigateToEventsMonitor(context),
+          isEnabled: true,
+        ),
+        ResponsiveServiceCard(
           title: 'Analytics',
           description: 'System logs & analytics',
           icon: Icons.analytics_rounded,
           gradientColors: const [Color(0xFFffecd2), Color(0xFFfcb69f)],
           onTap: () => _navigateToAnalytics(context),
-          isEnabled: true,        ),
+          isEnabled: true,
+        ),
         ResponsiveServiceCard(
           title: 'Cloud Storage',
           description: 'File management',
@@ -132,12 +141,20 @@ class ServiceGrid extends StatelessWidget {
       ),
     );
   }
-
   void _navigateToQRGenerator(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => const AdminQrPage(),
+      ),
+    );
+  }
+
+  void _navigateToEventsMonitor(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AdminEventsMonitorScreen(),
       ),
     );
   }
@@ -153,7 +170,6 @@ class ServiceGrid extends StatelessWidget {
   void _navigateToEvents(BuildContext context) {
     _showComingSoonDialog(context, 'Events');
   }
-
   void _navigateToCalendar(BuildContext context) {
     _showComingSoonDialog(context, 'Calendar');
   }

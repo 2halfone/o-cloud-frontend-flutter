@@ -1,0 +1,571 @@
+6. Events Dashboard
+<input disabled="" type="checkbox"> Update events list to show ALL events (not limited to 5)
+<input disabled="" type="checkbox"> Add attendance statistics per event
+<input disabled="" type="checkbox"> Add "View Attendance" button for each event
+7. Attendance Detail View
+<input disabled="" type="checkbox"> Create table with columns: Date, Name, Last Name, Timestamp, Status
+<input disabled="" type="checkbox"> Implement status dropdown for each user (Hospital, Family, Emergency, Vacancy, Personal)
+<input disabled="" type="checkbox"> Add bulk status update functionality
+<input disabled="" type="checkbox"> Show "-" for timestamp when user hasn't scanned
+8. Status Management UI
+<input disabled="" type="checkbox"> Create status selection dropdown with predefined options
+<input disabled="" type="checkbox"> Add icons for each status type (🏥 Hospital, 👨‍👩‍👧‍👦 Family, etc.)
+<input disabled="" type="checkbox"> Implement real-time status updates
+<input disabled="" type="checkbox"> Add confirmation dialogs for status changes
+
+
+
+# Event Management API Documentation
+
+## Overview
+This document provides comprehensive documentation for the Event Management APIs that enable visualization and management of attendance events and participating users. These APIs are part of the enhanced admin functionality implemented for the attendance management system.
+
+**Version:** 1.0  
+**Last Updated:** June 9, 2025  
+**Service:** User Service  
+**Authentication:** JWT Token Required  
+**Authorization:** Admin Role Required  
+
+## Table of Contents
+1. [Authentication & Authorization](#authentication--authorization)
+2. [API Endpoints](#api-endpoints)
+3. [Data Models](#data-models)
+4. [Status Management](#status-management)
+5. [Response Formats](#response-formats)
+6. [Error Handling](#error-handling)
+7. [Usage Examples](#usage-examples)
+8. [Testing Guide](#testing-guide)
+
+## Authentication & Authorization
+
+### Requirements
+- **JWT Token:** Required in Authorization header
+- **Role:** Admin role required for all endpoints
+- **Format:** `Authorization: Bearer <jwt_token>`
+
+### Gateway Routes
+All requests are routed through the Gateway service with the following base URL:
+```
+Base URL: http://localhost:8080/user/qr/admin
+```
+
+## API Endpoints
+
+### 1. Get Events List with Statistics
+
+**Endpoint:** `GET /user/qr/admin/events`
+
+**Description:** Retrieves a comprehensive list of all attendance events with real-time statistics including total users, present count, and attendance rates.
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+```
+
+**Response:**
+```json
+{
+  "events": [
+    {
+      "id": 1,
+      "event_id": "daily_attendance_2025_06_09",
+      "event_name": "Daily Attendance",
+      "date": "2025-06-09",
+      "qr_image_path": "/qr/daily_attendance_2025_06_09.png",
+      "expires_at": "2025-06-09T23:59:59Z",
+      "is_active": true,
+      "created_at": "2025-06-09T08:00:00Z",
+      "statistics": {
+        "total_users": 150,
+        "present_count": 142,
+        "attendance_rate": 94.67,
+        "status_breakdown": {
+          "present": 142,
+          "hospital": 2,
+          "family": 1,
+          "emergency": 0,
+          "vacancy": 3,
+          "personal": 1,
+          "not_registered": 1
+        }
+      }
+    }
+  ]
+}
+```
+
+**Features:**
+- Real-time statistics calculation
+- Status breakdown for each event
+- Attendance rate calculation
+- Complete event metadata
+
+---
+
+### 2. Get Event Users with Status
+
+**Endpoint:** `GET /user/qr/admin/events/{event_id}/users`
+
+**Description:** Retrieves a complete list of all users for a specific event with their current attendance status, scan times, and additional details.
+
+**Path Parameters:**
+- `event_id` (string, required): The unique identifier of the event
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+```
+
+**Query Parameters:**
+- `status` (string, optional): Filter users by status (`present`, `hospital`, `family`, `emergency`, `vacancy`, `personal`, `not_registered`)
+- `page` (int, optional): Page number for pagination (default: 1)
+- `limit` (int, optional): Number of users per page (default: 50, max: 200)
+
+**Response:**
+```json
+{
+  "event_info": {
+    "event_id": "daily_attendance_2025_06_09",
+    "event_name": "Daily Attendance",
+    "date": "2025-06-09",
+    "is_active": true
+  },
+  "statistics": {
+    "total_users": 150,
+    "present_count": 142,
+    "attendance_rate": 94.67,
+    "status_breakdown": {
+      "present": 142,
+      "hospital": 2,
+      "family": 1,
+      "emergency": 0,
+      "vacancy": 3,
+      "personal": 1,
+      "not_registered": 1
+    }
+  },
+  "users": [
+    {
+      "id": 1,
+      "user_id": 123,
+      "name": "Marco",
+      "surname": "Rossi",
+      "status": "present",
+      "scanned_at": "2025-06-09T08:15:30Z",
+      "timestamp": "2025-06-09T08:15:30Z",
+      "motivazione": null,
+      "updated_by": null,
+      "updated_at": "2025-06-09T08:15:30Z"
+    },
+    {
+      "id": 2,
+      "user_id": 124,
+      "name": "Laura",
+      "surname": "Bianchi",
+      "status": "hospital",
+      "scanned_at": null,
+      "timestamp": null,
+      "motivazione": "Medical appointment",
+      "updated_by": 1,
+      "updated_at": "2025-06-09T09:30:00Z"
+    }
+  ],
+  "pagination": {
+    "current_page": 1,
+    "total_pages": 3,
+    "total_users": 150,
+    "users_per_page": 50
+  }
+}
+```
+
+**Features:**
+- Complete user list with attendance details
+- Status filtering capabilities
+- Pagination support
+- Real-time event statistics
+- Audit trail information (updated_by, updated_at)
+
+---
+
+### 3. Update User Status
+
+**Endpoint:** `PATCH /user/qr/admin/events/{event_id}/users/{user_id}/status`
+
+**Description:** Updates the attendance status of a specific user for a given event. This endpoint allows administrators to manually change user status with optional reason/motivation.
+
+**Path Parameters:**
+- `event_id` (string, required): The unique identifier of the event
+- `user_id` (int, required): The unique identifier of the user
+
+**Headers:**
+```
+Authorization: Bearer <jwt_token>
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "status": "hospital",
+  "motivazione": "Medical appointment - doctor's note provided"
+}
+```
+
+**Request Fields:**
+- `status` (string, required): New status value. Must be one of: `present`, `hospital`, `family`, `emergency`, `vacancy`, `personal`, `not_registered`
+- `motivazione` (string, optional): Reason or motivation for the status change
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "User status updated successfully",
+  "user": {
+    "id": 2,
+    "user_id": 124,
+    "name": "Laura",
+    "surname": "Bianchi",
+    "status": "hospital",
+    "scanned_at": null,
+    "timestamp": null,
+    "motivazione": "Medical appointment - doctor's note provided",
+    "updated_by": 1,
+    "updated_at": "2025-06-09T10:45:00Z"
+  },
+  "event_statistics": {
+    "total_users": 150,
+    "present_count": 141,
+    "attendance_rate": 94.00,
+    "status_breakdown": {
+      "present": 141,
+      "hospital": 3,
+      "family": 1,
+      "emergency": 0,
+      "vacancy": 3,
+      "personal": 1,
+      "not_registered": 1
+    }
+  }
+}
+```
+
+**Features:**
+- Admin status override capability
+- Audit trail tracking
+- Real-time statistics update
+- Motivation/reason tracking
+- Automatic timestamp updates
+
+## Data Models
+
+### Event Model
+```go
+type Event struct {
+    ID           int                    `json:"id"`
+    EventID      string                 `json:"event_id"`
+    EventName    string                 `json:"event_name"`
+    Date         string                 `json:"date"`
+    QRImagePath  string                 `json:"qr_image_path"`
+    ExpiresAt    time.Time              `json:"expires_at"`
+    IsActive     bool                   `json:"is_active"`
+    CreatedAt    time.Time              `json:"created_at"`
+    Statistics   EventStatistics        `json:"statistics"`
+}
+```
+
+### Event Statistics Model
+```go
+type EventStatistics struct {
+    TotalUsers      int                    `json:"total_users"`
+    PresentCount    int                    `json:"present_count"`
+    AttendanceRate  float64                `json:"attendance_rate"`
+    StatusBreakdown map[string]int         `json:"status_breakdown"`
+}
+```
+
+### User Attendance Model
+```go
+type UserAttendance struct {
+    ID         int        `json:"id"`
+    UserID     int        `json:"user_id"`
+    Name       string     `json:"name"`
+    Surname    string     `json:"surname"`
+    Status     string     `json:"status"`
+    ScannedAt  *time.Time `json:"scanned_at"`
+    Timestamp  *time.Time `json:"timestamp"`
+    Motivazione *string   `json:"motivazione"`
+    UpdatedBy  *int       `json:"updated_by"`
+    UpdatedAt  time.Time  `json:"updated_at"`
+}
+```
+
+### Status Update Request Model
+```go
+type StatusUpdateRequest struct {
+    Status      string  `json:"status" validate:"required,oneof=present hospital family emergency vacancy personal not_registered"`
+    Motivazione *string `json:"motivazione"`
+}
+```
+
+## Status Management
+
+### Valid Status Values
+The system supports 7 distinct status values for comprehensive attendance tracking:
+
+| Status | Description | Auto-Set | Manual-Set |
+|--------|-------------|----------|------------|
+| `present` | User scanned QR and is present | ✅ (QR Scan) | ✅ |
+| `hospital` | Medical/hospital reasons | ❌ | ✅ |
+| `family` | Family emergency/reasons | ❌ | ✅ |
+| `emergency` | General emergency | ❌ | ✅ |
+| `vacancy` | Vacation/leave | ❌ | ✅ |
+| `personal` | Personal reasons | ❌ | ✅ |
+| `not_registered` | Default status (not yet scanned) | ✅ (Default) | ✅ |
+
+### Status Change Rules
+1. **QR Scan Trigger:** Automatically sets status to `present`
+2. **Admin Override:** Administrators can manually change any status
+3. **Audit Trail:** All manual changes are tracked with admin ID and timestamp
+4. **Validation:** Status values are validated against the allowed list
+
+### Status Priority Logic
+```
+1. QR Scan → Auto-set to 'present'
+2. Admin Manual Update → Override to any valid status
+3. Default → 'not_registered' for new users
+```
+
+## Response Formats
+
+### Success Response Structure
+```json
+{
+  "success": true,
+  "message": "Operation completed successfully",
+  "data": { /* Response data */ }
+}
+```
+
+### Error Response Structure
+```json
+{
+  "success": false,
+  "error": "Error description",
+  "code": "ERROR_CODE",
+  "details": { /* Additional error details */ }
+}
+```
+
+### Pagination Structure
+```json
+{
+  "pagination": {
+    "current_page": 1,
+    "total_pages": 5,
+    "total_records": 150,
+    "records_per_page": 50,
+    "has_next": true,
+    "has_previous": false
+  }
+}
+```
+
+## Error Handling
+
+### Common Error Codes
+
+| HTTP Status | Error Code | Description |
+|-------------|------------|-------------|
+| 400 | `INVALID_REQUEST` | Invalid request parameters or body |
+| 401 | `UNAUTHORIZED` | Missing or invalid JWT token |
+| 403 | `FORBIDDEN` | Insufficient permissions (admin role required) |
+| 404 | `EVENT_NOT_FOUND` | Specified event does not exist |
+| 404 | `USER_NOT_FOUND` | Specified user does not exist |
+| 422 | `INVALID_STATUS` | Invalid status value provided |
+| 500 | `DATABASE_ERROR` | Internal database error |
+| 500 | `INTERNAL_ERROR` | Internal server error |
+
+### Error Response Examples
+
+**Missing Authorization:**
+```json
+{
+  "success": false,
+  "error": "Authorization header required",
+  "code": "UNAUTHORIZED"
+}
+```
+
+**Invalid Status Value:**
+```json
+{
+  "success": false,
+  "error": "Invalid status value. Must be one of: present, hospital, family, emergency, vacancy, personal, not_registered",
+  "code": "INVALID_STATUS"
+}
+```
+
+**Event Not Found:**
+```json
+{
+  "success": false,
+  "error": "Event not found",
+  "code": "EVENT_NOT_FOUND",
+  "details": {
+    "event_id": "nonexistent_event_123"
+  }
+}
+```
+
+## Usage Examples
+
+### Example 1: Get All Events with Statistics
+
+**Request:**
+```bash
+curl -X GET "http://localhost:8080/user/qr/admin/events" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json"
+```
+
+**Use Case:** Admin dashboard displaying all events with attendance overview.
+
+### Example 2: Get Users for Specific Event
+
+**Request:**
+```bash
+curl -X GET "http://localhost:8080/user/qr/admin/events/daily_attendance_2025_06_09/users?status=present&limit=25" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json"
+```
+
+**Use Case:** View all present users for today's attendance event.
+
+### Example 3: Update User Status
+
+**Request:**
+```bash
+curl -X PATCH "http://localhost:8080/user/qr/admin/events/daily_attendance_2025_06_09/users/124/status" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "status": "hospital",
+    "motivazione": "Medical appointment with specialist"
+  }'
+```
+
+**Use Case:** Administrator manually updating a user's status due to medical absence.
+
+### Example 4: Filter Users by Status
+
+**Request:**
+```bash
+curl -X GET "http://localhost:8080/user/qr/admin/events/daily_attendance_2025_06_09/users?status=not_registered" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." \
+  -H "Content-Type: application/json"
+```
+
+**Use Case:** Find users who haven't yet scanned their QR code.
+
+## Testing Guide
+
+### Prerequisites
+1. **Admin JWT Token:** Obtain a valid JWT token for an admin user
+2. **Active Event:** Ensure you have an active event created
+3. **Test Users:** Have users registered in the system
+
+### Test Scenarios
+
+#### 1. Test Event List Retrieval
+```bash
+# Test basic event listing
+curl -X GET "http://localhost:8080/user/qr/admin/events" \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+
+# Expected: List of events with statistics
+```
+
+#### 2. Test User List for Event
+```bash
+# Test user listing for specific event
+curl -X GET "http://localhost:8080/user/qr/admin/events/YOUR_EVENT_ID/users" \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+
+# Expected: List of users with their attendance status
+```
+
+#### 3. Test Status Update
+```bash
+# Test valid status update
+curl -X PATCH "http://localhost:8080/user/qr/admin/events/YOUR_EVENT_ID/users/USER_ID/status" \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "hospital", "motivazione": "Medical appointment"}'
+
+# Expected: Success response with updated user data
+```
+
+#### 4. Test Error Scenarios
+```bash
+# Test invalid status
+curl -X PATCH "http://localhost:8080/user/qr/admin/events/YOUR_EVENT_ID/users/USER_ID/status" \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"status": "invalid_status"}'
+
+# Expected: 422 error with validation message
+```
+
+#### 5. Test Pagination
+```bash
+# Test pagination
+curl -X GET "http://localhost:8080/user/qr/admin/events/YOUR_EVENT_ID/users?page=1&limit=10" \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+
+# Expected: Paginated response with pagination metadata
+```
+
+### Performance Testing
+```bash
+# Test with large user sets
+curl -X GET "http://localhost:8080/user/qr/admin/events/YOUR_EVENT_ID/users?limit=200" \
+  -H "Authorization: Bearer YOUR_ADMIN_JWT_TOKEN"
+
+# Monitor response time and memory usage
+```
+
+## Integration Notes
+
+### Frontend Integration
+- **React/Vue.js:** Use Axios or Fetch API with JWT token
+- **Flutter:** Use Dio or HTTP package with proper auth headers
+- **Postman/Insomnia:** Set Authorization header for testing
+
+### Database Performance
+- **Indexes:** Strategic indexes applied for optimal query performance
+- **Triggers:** Automatic status updates on QR scan
+- **Constraints:** Data integrity enforced at database level
+
+### Security Considerations
+- **JWT Validation:** All requests require valid JWT token
+- **Role Authorization:** Admin role verified for all operations
+- **Input Validation:** Request data validated against defined schemas
+- **Audit Trail:** All status changes tracked with admin identity
+
+## Version History
+
+| Version | Date | Changes |
+|---------|------|---------|
+| 1.0 | June 9, 2025 | Initial release of Event Management APIs |
+
+---
+
+**Documentation Status:** ✅ Complete  
+**API Status:** ✅ Production Ready  
+**Testing Status:** ✅ Tested and Validated  
+**Security Review:** ✅ Completed  
+
+This documentation covers all aspects of the Event Management API system for comprehensive attendance tracking and user management.

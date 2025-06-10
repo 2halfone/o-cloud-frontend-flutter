@@ -59,13 +59,13 @@ class _AdminLogsHeaderState extends State<AdminLogsHeader> {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF1a1a1a),
-            const Color(0xFF2d2d2d),
-            const Color(0xFF404040),
+            Color(0xFF1a1a1a),
+            Color(0xFF2d2d2d),
+            Color(0xFF404040),
           ],
         ),
         borderRadius: const BorderRadius.only(

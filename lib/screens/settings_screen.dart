@@ -55,20 +55,20 @@ class _SettingsScreenState extends State<SettingsScreen>
         opacity: _animations.fadeAnimation,
         child: SlideTransition(
           position: _animations.slideAnimation,
-          child: SafeArea(
+          child: const SafeArea(
             child: SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Header with navigation
-                  const SettingsHeader(),
+                  SettingsHeader(),
                   
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                   
                   // Settings Sections
-                  const SettingsSections(),
+                  SettingsSections(),
                   
-                  const SizedBox(height: 24),
+                  SizedBox(height: 24),
                 ],
               ),
             ),

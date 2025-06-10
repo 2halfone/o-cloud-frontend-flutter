@@ -26,8 +26,8 @@ This Flutter application provides a comprehensive user interface for attendance 
 lib/
 ├── main.dart                    # Application entry point
 ├── models/                      # Data models with JSON serialization
-│   ├── attendance.dart          # Attendance tracking model (English)
-│   ├── attendance.g.dart        # Auto-generated code
+│   ├── attendance.dart          # Attendance tracking model (5 status options)
+│   ├── attendance.g.dart        # Auto-generated code with English enum values
 │   ├── auth_response.dart       # Authentication response model
 │   ├── auth_response.g.dart     # Auto-generated code
 │   ├── auth_log.dart           # Authentication logs model
@@ -96,8 +96,10 @@ lib/
 #### QR Scanning
 - **Camera Scanning**: Real-time QR code detection
 - **Gallery Import**: Scan QR codes from saved images
-- **Attendance Tracking**: Automatic attendance recording
-- **Status Management**: Present, Absent, Late status tracking
+- **Attendance Tracking**: Streamlined attendance recording with 5 status options
+- **Simplified Form**: No text input required for any attendance status
+- **Status Options**: Present, Hospital, Family Reasons, Emergency, Vacancy
+- **Backend Integration**: English enum values for seamless API communication
 
 ## 🎨 Responsive Design
 
@@ -221,9 +223,10 @@ flutter test test/qr_scanner_test.dart
 ### 📋 Test Coverage
 - ✅ **AuthService**: Login, register, token refresh, storage
 - ✅ **UserService**: CRUD operations with HTTP mocks
-- ✅ **AttendanceService**: Attendance tracking with English enums
+- ✅ **AttendanceService**: Attendance tracking with 5 English status options
 - ✅ **QR Scanner**: QR code scanning functionality
 - ✅ **Widget Tests**: Main UI components
+- ✅ **Attendance Status**: Enum values and form validation
 
 ## 🔐 Security
 
@@ -235,6 +238,66 @@ flutter test test/qr_scanner_test.dart
 - **Input Validation**: Email and password validation
 - **Permission Management**: Proper Android/iOS permissions for camera and gallery
 - **QR Code Security**: JWT-based QR codes with expiration
+
+## 🆕 Recent Updates
+
+### 📋 Admin Events Monitoring System (Points 6-7 Complete)
+
+**Point 6 - Events Dashboard ✅ COMPLETED**
+- Created comprehensive admin events monitoring interface
+- Displays ALL events (not limited to 5) with attendance statistics
+- Shows total users, present count, attendance rate, and status breakdown
+- Added "View Attendance" button navigation to detailed event views
+- Integrated with main dashboard via "Events Monitor" card
+
+**Point 7 - Attendance Detail View ✅ COMPLETED**
+- Implemented dual-view system: **Table View** and **Card View**
+- **Table format** with columns: Date, Name, Last Name, Timestamp, Status
+- Status dropdown for each user with all available options (Hospital, Family, Emergency, Vacancy, Personal)
+- **Bulk status update functionality** with multi-user selection
+- Shows "-" for timestamp when user hasn't scanned QR code
+- Selection mode with checkboxes and floating action button
+- Real-time status updates with confirmation dialogs
+
+**New Features Added:**
+- **View Toggle**: Switch between table and card views with toolbar button
+- **Multi-Selection**: Checkbox-based user selection with "Select All" functionality
+- **Bulk Operations**: Update multiple users' status simultaneously
+- **Enhanced Status Management**: Dropdown menus with icons and color coding
+- **Responsive Table**: Proper table format with headers and alternating row colors
+- **Status Filtering**: Filter users by attendance status
+- **Pagination**: Load more functionality for large user lists
+- **Real-time Updates**: Immediate UI refresh after status changes
+
+**New Admin Events System Files:**
+- `lib/services/admin_events_service.dart` - Complete API integration service
+- `lib/models/admin_events.dart` - Event data models with safe parsing
+- `lib/screens/admin_events_monitor_screen.dart` - Main events dashboard
+- `lib/screens/admin_event_detail_screen.dart` - Detailed table/card view
+- `lib/widgets/dashboard/service_grid.dart` - Navigation integration
+
+### ✅ Attendance System Improvements (Latest)
+- **Simplified Status Options**: Reduced from 8 to 5 user-visible status options
+- **Removed Status Options**: 
+  - `personal` - Removed from user interface
+  - `notRegistered` - Internal use only, not shown to users
+- **No Text Input Required**: Removed mandatory text input for family and emergency reasons
+- **Enhanced User Experience**: Streamlined attendance form for faster submission
+- **Backend Compatibility**: All enum values now match backend expectations
+- **Fixed Enum Serialization**: Corrected JSON serialization with proper English values
+
+### 🔧 Available Attendance Status Options
+1. **Present** 🟢 - Standard attendance
+2. **Hospital** 🔴 - Medical appointments
+3. **Family** 🟣 - Family-related reasons
+4. **Emergency** 🟠 - Emergency situations  
+5. **Vacancy** 🔵 - Planned time off
+
+### 📱 Updated User Interface
+- **Dropdown Selection**: Clean status selection without text input
+- **Already Registered Dialog**: Improved messaging when attendance exists
+- **Form Validation**: Simplified validation without text requirements
+- **Status Icons**: Color-coded icons for each attendance type
 
 ## 🎯 Key Features
 
@@ -262,11 +325,12 @@ flutter test test/qr_scanner_test.dart
 - [x] Admin authentication logs
 
 ### 📊 Attendance System
-- [x] Attendance tracking (Present/Absent/Late)
-- [x] QR-based attendance marking
-- [x] Attendance form with reason/motivation
-- [x] Status management in English
-- [x] Integration with backend API
+- [x] Attendance tracking with 5 status options (Present, Hospital, Family, Emergency, Vacancy)
+- [x] QR-based attendance marking with simplified form
+- [x] Streamlined attendance form (no text input required)
+- [x] English-only status management for backend compatibility
+- [x] Removed internal status options from user interface
+- [x] Integration with backend API using correct enum values
 
 ### 🎨 User Experience
 - [x] Modern design with Material Design
@@ -330,9 +394,11 @@ flutter run             # Connected mobile device
 
 ### 🌍 Internationalization
 - **Codebase Language**: All code standardized to English
-- **Enum Values**: AttendanceStatus uses English values (present, absent, late)
+- **Enum Values**: AttendanceStatus uses 5 English values (present, hospital, family, emergency, vacancy)
 - **Field Names**: All model fields in English for API compatibility
 - **Comments**: All documentation and comments in English
+- **User Interface**: Simplified attendance form without mandatory text inputs
+- **Backend Sync**: Enum values synchronized with backend requirements
 
 ---
 

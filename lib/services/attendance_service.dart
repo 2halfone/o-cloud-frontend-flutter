@@ -146,7 +146,7 @@ class AttendanceService {
         print('🔍 AttendanceService: Could not decode tokens for debugging: $jwtError');
       }
 
-      final url = '$_baseUrl/user/qr/scan';
+      const url = '$_baseUrl/user/qr/scan';
       print('🌐 AttendanceService: Making request to: $url');
       print('📝 AttendanceService: Request data: ${jsonEncode(request.toJson())}');
 
@@ -242,7 +242,7 @@ class AttendanceService {
         throw Exception('Authentication token not found');
       }
 
-      final url = '$_baseUrl/user/qr/attendance/today';
+      const url = '$_baseUrl/user/qr/attendance/today';
       print('🌐 AttendanceService: Checking today\'s attendance: $url');
 
       final response = await http.get(

@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import '../lib/services/attendance_service.dart';
-import '../lib/models/attendance.dart';
-import '../lib/utils/constants.dart';
+import 'package:go_cloud_backend/services/attendance_service.dart';
+import 'package:go_cloud_backend/models/attendance.dart';
+import 'package:go_cloud_backend/utils/constants.dart';
 
 void main() {
   group('AttendanceService Integration Tests', () {
