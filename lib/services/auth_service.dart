@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:flutter/foundation.dart';
 import '../utils/token_manager.dart';
 
 class AuthService {
@@ -196,60 +197,56 @@ class AuthService {
       
       // Decode the JWT token to access claims
       final decodedToken = JwtDecoder.decode(accessToken);
-      
-      // 🔍 DEBUG: Print the entire token for investigation
-      print('🔍 JWT Token Debug:');
-      print('Token: ${decodedToken.toString()}');
+        // 🔍 DEBUG: Print the entire token for investigation
+      debugPrint('🔍 JWT Token Debug:');
+      debugPrint('Token: ${decodedToken.toString()}');
         // Check if the user has admin role - STRICT VALIDATION
       // Only these specific fields should be checked for admin status
       final role = decodedToken['role']; 
       final userType = decodedToken['user_type'];
-      final isAdmin = decodedToken['is_admin'];
-      final roles = decodedToken['roles'] as List<dynamic>?;
+      final isAdmin = decodedToken['is_admin'];      final roles = decodedToken['roles'] as List<dynamic>?;
       
-      print('🔍 Role field: $role');
-      print('🔍 User type field: $userType');
-      print('🔍 Is admin field: $isAdmin');
-      print('🔍 Roles array: $roles');
-      
-      // Check role field for string values
+      debugPrint('🔍 Role field: $role');
+      debugPrint('🔍 User type field: $userType');
+      debugPrint('🔍 Is admin field: $isAdmin');
+      debugPrint('🔍 Roles array: $roles');
+        // Check role field for string values
       if (role is String && (role.toLowerCase() == 'admin' || role.toLowerCase() == 'administrator')) {
-        print('🔍 ✅ Admin detected via role string: $role');
+        debugPrint('🔍 ✅ Admin detected via role string: $role');
         return true;
       }
       
       // Check user_type field for string values  
       if (userType is String && (userType.toLowerCase() == 'admin' || userType.toLowerCase() == 'administrator')) {
-        print('🔍 ✅ Admin detected via user_type string: $userType');
+        debugPrint('🔍 ✅ Admin detected via user_type string: $userType');
         return true;
       }
       
       // Check is_admin field for boolean values
       if (isAdmin is bool && isAdmin == true) {
-        print('🔍 ✅ Admin detected via is_admin boolean: $isAdmin');
+        debugPrint('🔍 ✅ Admin detected via is_admin boolean: $isAdmin');
         return true;
       }
       
       // Check roles array
       if (roles != null && roles.any((r) => r.toString().toLowerCase() == 'admin')) {
-        print('🔍 ✅ Admin detected via roles array: $roles');
+        debugPrint('🔍 ✅ Admin detected via roles array: $roles');
         return true;
       }
         // 🚫 RIMUOVIAMO questo controllo email - causa falsi positivi
-      // Gli utenti con email che contengono 'admin' non dovrebbero automaticamente diventare admin
-      // Solo il campo 'role' nel JWT dovrebbe determinare i permessi
+      // Gli utenti con email che contengono 'admin' non dovrebbero automaticamente diventare admin      // Only el campo 'role' nel JWT dovrebbe determinare i permessi
       final email = decodedToken['email'] ?? decodedToken['sub'];
-      print('🔍 Email field: $email (but not using for admin detection)');
+      debugPrint('🔍 Email field: $email (but not using for admin detection)');
       
       // 🚫 COMMENTED OUT: if (email is String && email.toLowerCase().contains('admin')) {
-      //   print('🔍 Admin detected via email contains admin: $email');
+      //   debugPrint('🔍 Admin detected via email contains admin: $email');
       //   return true;
       // }
       
-      print('🔍 No admin role detected - returning false');
+      debugPrint('🔍 No admin role detected - returning false');
       return false;
     } catch (e) {
-      print('🔍 Error in isUserAdmin: $e');
+      debugPrint('🔍 Error in isUserAdmin: $e');
       return false;
     }
   }

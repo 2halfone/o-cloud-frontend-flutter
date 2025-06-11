@@ -132,14 +132,13 @@ class _QRScannerScreenState extends State<QRScannerScreen>
 
       // If there's an error checking today's attendance, still allow them to try submitting
       // This ensures the app doesn't break if the check fails
-      print('Error checking today\'s attendance: $e');
+      debugPrint('Error checking today\'s attendance: $e');
       
       if (mounted) {
         setState(() {
           _showAttendanceForm = true;
         });
-        
-        // Optionally show a warning that we couldn't check today's attendance
+          // Optionally show a warning that we couldn't check today's attendance
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Could not verify today\'s attendance status: $e'),
@@ -250,11 +249,11 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     }
   }
   void _onFlashToggle() {
-    print('Flash toggle called - current state: $_isFlashOn');
+    debugPrint('Flash toggle called - current state: $_isFlashOn');
     setState(() {
       _isFlashOn = !_isFlashOn;
     });
-    print('Flash toggle completed - new state: $_isFlashOn');
+    debugPrint('Flash toggle completed - new state: $_isFlashOn');
     
     // Show feedback to user
     ScaffoldMessenger.of(context).showSnackBar(
@@ -265,43 +264,58 @@ class _QRScannerScreenState extends State<QRScannerScreen>
       ),
     );
   }  Future<void> _pickImageFromGallery() async {
-    print('Gallery function called');
+    debugPrint('Gallery function called');
     if (!mounted) {
-      print('Widget not mounted, returning');
+      debugPrint('Widget not mounted, returning');
       return;
     }
     
     try {
-      print('Requesting permissions...');
+      debugPrint('Requesting permissions...');
       // Request appropriate permissions based on platform
       PermissionStatus permissionStatus;
       if (Platform.isAndroid) {
         // For Android 13+ (API 33+), use photos permission
+        debugPrint('Requesting Android photos permission...');
         permissionStatus = await Permission.photos.request();
         if (permissionStatus.isDenied) {
           // Fallback to storage permission for older Android versions
+          debugPrint('Photos permission denied, trying storage permission...');
           permissionStatus = await Permission.storage.request();
+        }
+        if (permissionStatus.isDenied) {
+          // Try media library as final fallback
+          debugPrint('Storage permission denied, trying media library permission...');
+          permissionStatus = await Permission.mediaLibrary.request();
         }
       } else {
         // For iOS, photos permission is typically handled automatically by image_picker
+        debugPrint('Requesting iOS photos permission...');
         permissionStatus = await Permission.photos.request();
       }
 
-      print('Permission status: $permissionStatus');
-      
-      if (!permissionStatus.isGranted && !permissionStatus.isLimited) {
+      debugPrint('Permission status: $permissionStatus');
+        if (!permissionStatus.isGranted && !permissionStatus.isLimited) {
         if (mounted) {
-          _showErrorSnackBar('Gallery access permission is required');
+          // Check if permission was permanently denied
+          if (permissionStatus.isPermanentlyDenied) {
+            _showPermissionSettingsDialog();
+          } else {
+            _showErrorSnackBar('Gallery access required. Please check app permission settings.');
+          }
         }
         return;
       }
 
-      print('Opening image picker...');
+      debugPrint('Opening image picker...');
       final XFile? image = await _imagePicker.pickImage(
         source: ImageSource.gallery,
+        maxWidth: 1024,
+        maxHeight: 1024,
+        imageQuality: 85,
       );
       
-      print('Image selected: ${image?.path}');
+      debugPrint('Image selected: ${image?.path}');
       
       if (image != null && mounted) {
         // Show loading indicator
@@ -316,11 +330,11 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         );
 
         try {
-          print('Scanning QR code from image...');
+          debugPrint('Scanning QR code from image...');
           // Scan QR code from the selected image
           final String? qrData = await QrCodeToolsPlugin.decodeFrom(image.path);
           
-          print('QR scan result: $qrData');
+          debugPrint('QR scan result: $qrData');
           
           // Hide loading indicator
           if (mounted) {
@@ -328,14 +342,14 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             
             if (qrData != null && qrData.isNotEmpty) {
               // Successfully detected QR code
-              print('QR code detected, calling onQRScanned');
+              debugPrint('QR code detected, calling onQRScanned');
               _onQRScanned(qrData);
             } else {
               _showErrorSnackBar('No QR code found in the selected image');
             }
           }
         } catch (e) {
-          print('Error scanning QR code: $e');
+          debugPrint('Error scanning QR code: $e');
           // Hide loading indicator
           if (mounted) {
             Navigator.of(context).pop();
@@ -344,7 +358,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         }
       }
     } catch (e) {
-      print('Error in gallery function: $e');
+      debugPrint('Error in gallery function: $e');
       if (mounted) {
         _showErrorSnackBar('Error during image selection: $e');
       }
@@ -360,6 +374,67 @@ class _QRScannerScreenState extends State<QRScannerScreen>
       _showAttendanceForm = false;
       _scannedData = null;
     });
+  }
+
+  void _showPermissionSettingsDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF1A1A2E),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),          title: const Row(
+            children: [
+              Icon(Icons.settings, color: Colors.orange),
+              SizedBox(width: 8),
+              Text(
+                'Permissions Required',
+                style: TextStyle(color: Colors.white, fontSize: 18),
+              ),
+            ],
+          ),
+          content: const Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Gallery access has been permanently denied.',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              SizedBox(height: 12),
+              Text(
+                'To scan QR codes from images, you need to enable permissions in app settings.',
+                style: TextStyle(color: Colors.grey, fontSize: 14),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(
+                'Cancel',
+                style: TextStyle(color: Colors.grey[400]),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                openAppSettings();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF667eea),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Open Settings',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showErrorSnackBar(String message) {
@@ -438,10 +513,9 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             Color(0xFF1a1a1a),
             Color(0xFF2d2d44),
           ],
-        ),
-        boxShadow: [
+        ),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.black.withValues(alpha: 0.2),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
@@ -480,9 +554,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
           ),
           Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: const Color(0xFF667eea).withOpacity(0.2),
+            padding: const EdgeInsets.all(8),            decoration: BoxDecoration(
+              color: const Color(0xFF667eea).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -500,10 +573,9 @@ class _QRScannerScreenState extends State<QRScannerScreen>
     return Container(
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
+        borderRadius: BorderRadius.circular(20),        boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
+            color: Colors.black.withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -523,12 +595,11 @@ class _QRScannerScreenState extends State<QRScannerScreen>
   Widget _buildPermissionError() {
     return Container(
       margin: const EdgeInsets.all(24),
-      padding: const EdgeInsets.all(32),
-      decoration: BoxDecoration(
-        color: Colors.red.withOpacity(0.1),
+      padding: const EdgeInsets.all(32),      decoration: BoxDecoration(
+        color: Colors.red.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: Colors.red.withOpacity(0.3),
+          color: Colors.red.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -560,9 +631,8 @@ class _QRScannerScreenState extends State<QRScannerScreen>
           const SizedBox(height: 12),
           Text(
             'Grant camera access to scan QR codes',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.white.withOpacity(0.8),
+            textAlign: TextAlign.center,            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.8),
               fontSize: 16,
             ),
           ),
@@ -626,7 +696,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                   icon: Icons.photo_library,
                   label: 'Gallery',
                   onPressed: () {
-                    print('Gallery button pressed'); // Debug log
+                    debugPrint('Gallery button pressed'); // Debug log
                     _pickImageFromGallery();
                   },
                   color: const Color(0xFF4facfe),
@@ -635,7 +705,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                   icon: Icons.refresh,
                   label: 'Reset',
                   onPressed: () {
-                    print('Reset button pressed'); // Debug log
+                    debugPrint('Reset button pressed'); // Debug log
                     setState(() {
                       _scannedData = null;
                       _showAttendanceForm = false;
@@ -647,7 +717,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                   icon: _isFlashOn ? Icons.flash_on : Icons.flash_off,
                   label: 'Flash',
                   onPressed: () {
-                    print('Flash button pressed'); // Debug log
+                    debugPrint('Flash button pressed'); // Debug log
                     _onFlashToggle();
                   },
                   color: _isFlashOn ? Colors.yellow : Colors.grey,
@@ -672,16 +742,16 @@ class _QRScannerScreenState extends State<QRScannerScreen>
           children: [
             GestureDetector(
               onTap: () {
-                print('GestureDetector - Button $label tapped'); // Debug log
+                debugPrint('GestureDetector - Button $label tapped'); // Debug log
                 // Add haptic feedback
                 HapticFeedback.lightImpact();
                 onPressed();
               },
               onTapDown: (_) {
-                print('GestureDetector - Button $label pressed down');
+                debugPrint('GestureDetector - Button $label pressed down');
               },
               onTapUp: (_) {
-                print('GestureDetector - Button $label released');
+                debugPrint('GestureDetector - Button $label released');
               },
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
@@ -704,16 +774,16 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                   color: Colors.transparent,
                   child: InkWell(
                     onTap: () {
-                      print('InkWell - Button $label tapped'); // Debug log
+                      debugPrint('InkWell - Button $label tapped'); // Debug log
                       // Add haptic feedback
                       HapticFeedback.lightImpact();
                       onPressed();
                     },
                     onTapDown: (_) {
-                      print('InkWell - Button $label pressed down');
+                      debugPrint('InkWell - Button $label pressed down');
                     },
                     onTapUp: (_) {
-                      print('InkWell - Button $label released');
+                      debugPrint('InkWell - Button $label released');
                     },
                     borderRadius: BorderRadius.circular(16),
                     splashColor: color.withValues(alpha: 0.3),

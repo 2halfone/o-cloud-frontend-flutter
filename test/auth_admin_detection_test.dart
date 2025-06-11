@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 
@@ -37,12 +38,11 @@ void main() {
     test('admin detection logic validation', () {
       const adminPayload = {'role': 'admin', 'email': 'user@company.com'};
       const userPayload = {'role': 'user', 'email': 'adminuser@company.com'};
-      
-      expect(adminPayload['role'], 'admin');
+        expect(adminPayload['role'], 'admin');
       expect(userPayload['role'], 'user');
       expect(userPayload['email'], contains('admin'));
       
-      print('✅ Test passed: Only role field determines admin status, not email content');
+      debugPrint('✅ Test passed: Only role field determines admin status, not email content');
     });
   });
 }

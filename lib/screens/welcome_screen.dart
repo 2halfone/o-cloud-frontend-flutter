@@ -306,8 +306,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> with SingleTickerProvider
                     fontWeight: FontWeight.w600,
                     color: Colors.white,
                   ),
-                ),
-                Text(
+                ),                Text(
                   'Redirecting to dashboard in $_countdown seconds',
                   style: TextStyle(
                     fontSize: 12,

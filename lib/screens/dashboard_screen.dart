@@ -7,9 +7,8 @@ import '../widgets/dashboard/dashboard_animations.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
-
   @override
-  _DashboardScreenState createState() => _DashboardScreenState();
+  State<DashboardScreen> createState() => _DashboardScreenState();
 }
 
 class _DashboardScreenState extends State<DashboardScreen> 

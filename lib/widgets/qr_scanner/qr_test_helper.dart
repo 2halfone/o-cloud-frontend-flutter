@@ -16,12 +16,11 @@ class QRTestHelper extends StatelessWidget {
         maxWidth: 280,
         maxHeight: 300, // Prevent excessive height
       ),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF16213E).withOpacity(0.95),
+      padding: const EdgeInsets.all(16),      decoration: BoxDecoration(
+        color: const Color(0xFF16213E).withValues(alpha: 0.95),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: Colors.white.withValues(alpha: 0.1),
         ),
       ),
       child: Column(
@@ -87,10 +86,9 @@ class QRTestHelper extends StatelessWidget {
         onPressed: () {
           onQRGenerated(qrData);
           HapticFeedback.lightImpact();
-        },
-        style: OutlinedButton.styleFrom(
+        },        style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-          side: BorderSide(color: color.withOpacity(0.5)),
+          side: BorderSide(color: color.withValues(alpha: 0.5)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(8),
           ),

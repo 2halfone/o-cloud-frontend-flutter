@@ -15,9 +15,8 @@ class AdminLogsHeader extends StatefulWidget {
     required this.onRefresh,
     required this.onBack,
   });
-
   @override
-  _AdminLogsHeaderState createState() => _AdminLogsHeaderState();
+  State<AdminLogsHeader> createState() => _AdminLogsHeaderState();
 }
 
 class _AdminLogsHeaderState extends State<AdminLogsHeader> {

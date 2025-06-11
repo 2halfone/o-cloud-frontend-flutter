@@ -13,10 +13,8 @@ class AdminEventsService {
       final token = await TokenManager.getToken();
       if (token == null) {
         throw Exception('Authentication token not found');
-      }
-
-      const url = '$_baseUrl/user/qr/admin/events';
-      print('🌐 AdminEventsService: Getting all events from: $url');
+      }      const url = '$_baseUrl/user/qr/admin/events';
+      debugPrint('🌐 AdminEventsService: Getting all events from: $url');
 
       final response = await http.get(
         Uri.parse(url),
@@ -24,10 +22,8 @@ class AdminEventsService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-      );
-
-      print('📡 AdminEventsService: Response status: ${response.statusCode}');
-      print('📄 AdminEventsService: Response body: ${response.body}');
+      );      debugPrint('📡 AdminEventsService: Response status: ${response.statusCode}');
+      debugPrint('📄 AdminEventsService: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
@@ -35,14 +31,13 @@ class AdminEventsService {
             .map((event) => EventWithStatistics.fromJson(event))
             .toList();
         
-        print('✅ AdminEventsService: Retrieved ${events.length} events');
+        debugPrint('✅ AdminEventsService: Retrieved ${events.length} events');
         return events;
       } else {
         final errorData = jsonDecode(response.body);
         throw Exception(errorData['error'] ?? 'Failed to fetch events');
-      }
-    } catch (e) {
-      print('❌ AdminEventsService: Error fetching events: $e');
+      }    } catch (e) {
+      debugPrint('❌ AdminEventsService: Error fetching events: $e');
       throw Exception('Network error: $e');
     }
   }
@@ -67,12 +62,10 @@ class AdminEventsService {
       
       if (statusFilter != null && statusFilter.isNotEmpty) {
         queryParams['status'] = statusFilter;
-      }
-
-      final uri = Uri.parse('$_baseUrl/user/qr/admin/events/$eventId/users')
+      }      final uri = Uri.parse('$_baseUrl/user/qr/admin/events/$eventId/users')
           .replace(queryParameters: queryParams);
       
-      print('🌐 AdminEventsService: Getting event users from: $uri');
+      debugPrint('🌐 AdminEventsService: Getting event users from: $uri');
 
       final response = await http.get(
         uri,
@@ -82,18 +75,17 @@ class AdminEventsService {
         },
       );
 
-      print('📡 AdminEventsService: Response status: ${response.statusCode}');
-      print('📄 AdminEventsService: Response body: ${response.body}');
+      debugPrint('📡 AdminEventsService: Response status: ${response.statusCode}');
+      debugPrint('📄 AdminEventsService: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
-        return EventUsersResponse.fromJson(jsonData);
-      } else {
+        return EventUsersResponse.fromJson(jsonData);      } else {
         final errorData = jsonDecode(response.body);
         throw Exception(errorData['error'] ?? 'Failed to fetch event users');
       }
     } catch (e) {
-      print('❌ AdminEventsService: Error fetching event users: $e');
+      debugPrint('❌ AdminEventsService: Error fetching event users: $e');
       throw Exception('Network error: $e');
     }
   }
@@ -109,17 +101,15 @@ class AdminEventsService {
       final token = await TokenManager.getToken();
       if (token == null) {
         throw Exception('Authentication token not found');
-      }
-
-      final url = '$_baseUrl/user/qr/admin/events/$eventId/users/$userId/status';
-      print('🌐 AdminEventsService: Updating user status: $url');
+      }      final url = '$_baseUrl/user/qr/admin/events/$eventId/users/$userId/status';
+      debugPrint('🌐 AdminEventsService: Updating user status: $url');
 
       final requestBody = {
         'status': status,
         if (motivation != null) 'motivazione': motivation,
       };
 
-      print('📝 AdminEventsService: Request body: ${jsonEncode(requestBody)}');
+      debugPrint('📝 AdminEventsService: Request body: ${jsonEncode(requestBody)}');
 
       final response = await http.patch(
         Uri.parse(url),
@@ -130,17 +120,16 @@ class AdminEventsService {
         body: jsonEncode(requestBody),
       );
 
-      print('📡 AdminEventsService: Response status: ${response.statusCode}');
-      print('📄 AdminEventsService: Response body: ${response.body}');
+      debugPrint('📡 AdminEventsService: Response status: ${response.statusCode}');
+      debugPrint('📄 AdminEventsService: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(response.body);
         return UserStatusUpdateResponse.fromJson(jsonData);
       } else {
-        final errorData = jsonDecode(response.body);
-        throw Exception(errorData['error'] ?? 'Failed to update user status');
+        final errorData = jsonDecode(response.body);        throw Exception(errorData['error'] ?? 'Failed to update user status');
       }
-    } catch (e) {      print('❌ AdminEventsService: Error updating user status: $e');
+    } catch (e) {      debugPrint('❌ AdminEventsService: Error updating user status: $e');
       throw Exception('Network error: $e');
     }
   }
@@ -151,10 +140,8 @@ class AdminEventsService {
       final token = await TokenManager.getToken();
       if (token == null) {
         throw Exception('Authentication token not found');
-      }
-
-      final url = '$_baseUrl/user/qr/admin/events/$eventId';
-      print('🌐 AdminEventsService: Deleting event: $url');
+      }      final url = '$_baseUrl/user/qr/admin/events/$eventId';
+      debugPrint('🌐 AdminEventsService: Deleting event: $url');
 
       final response = await http.delete(
         Uri.parse(url),
@@ -164,12 +151,11 @@ class AdminEventsService {
         },
       );
 
-      print('📡 AdminEventsService: Delete response status: ${response.statusCode}');
-      print('📄 AdminEventsService: Delete response body: ${response.body}');      if (response.statusCode == 200 || response.statusCode == 204) {
-        final jsonData = response.statusCode == 200 
+      debugPrint('📡 AdminEventsService: Delete response status: ${response.statusCode}');
+      debugPrint('📄 AdminEventsService: Delete response body: ${response.body}');if (response.statusCode == 200 || response.statusCode == 204) {        final jsonData = response.statusCode == 200 
             ? jsonDecode(response.body)
             : {'message': 'Event deleted successfully'};
-        print('✅ AdminEventsService: Event deleted successfully');
+        debugPrint('✅ AdminEventsService: Event deleted successfully');
         return jsonData;
       } else {
         // Handle both JSON and plain text error responses
@@ -182,11 +168,10 @@ class AdminEventsService {
           errorMessage = response.body.isNotEmpty 
               ? response.body 
               : 'Failed to delete event (HTTP ${response.statusCode})';
-        }
-        throw Exception(errorMessage);
+        }        throw Exception(errorMessage);
       }
     } catch (e) {
-      print('❌ AdminEventsService: Error deleting event: $e');
+      debugPrint('❌ AdminEventsService: Error deleting event: $e');
       throw Exception('Network error: $e');
     }
   }

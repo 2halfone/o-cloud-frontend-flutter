@@ -1,4 +1,5 @@
 import 'package:json_annotation/json_annotation.dart';
+import 'package:flutter/foundation.dart';
 
 part 'admin_events.g.dart';
 
@@ -106,11 +107,10 @@ class EventWithStatistics {
     
     // Safe date parsing with fallbacks
     DateTime expiresAt;
-    try {
-      final expiresAtStr = json['expires_at'] as String?;
+    try {      final expiresAtStr = json['expires_at'] as String?;
       expiresAt = expiresAtStr != null ? DateTime.parse(expiresAtStr) : DateTime.now().add(const Duration(days: 1));
     } catch (e) {
-      print('⚠️ EventWithStatistics.fromJson: Error parsing expires_at, using tomorrow: $e');
+      debugPrint('⚠️ EventWithStatistics.fromJson: Error parsing expires_at, using tomorrow: $e');
       expiresAt = DateTime.now().add(const Duration(days: 1));
     }
     
@@ -119,7 +119,7 @@ class EventWithStatistics {
       final createdAtStr = json['created_at'] as String?;
       createdAt = createdAtStr != null ? DateTime.parse(createdAtStr) : DateTime.now();
     } catch (e) {
-      print('⚠️ EventWithStatistics.fromJson: Error parsing created_at, using current time: $e');
+      debugPrint('⚠️ EventWithStatistics.fromJson: Error parsing created_at, using current time: $e');
       createdAt = DateTime.now();
     }
     
@@ -132,11 +132,10 @@ class EventWithStatistics {
         presentCount: 0,
         absentCount: 0,
         scannedCount: 0,
-        attendanceRate: 0.0,
-        statusBreakdown: {},
+        attendanceRate: 0.0,      statusBreakdown: {},
       );
     } catch (e) {
-      print('⚠️ EventWithStatistics.fromJson: Error parsing statistics, using defaults: $e');
+      debugPrint('⚠️ EventWithStatistics.fromJson: Error parsing statistics, using defaults: $e');
       statistics = EventStatistics(
         totalUsers: 0,
         presentCount: 0,
@@ -238,9 +237,8 @@ class UserAttendanceDetail {
     DateTime? scannedAt;
     try {
       final scannedAtStr = json['scanned_at'] as String?;
-      scannedAt = scannedAtStr != null ? DateTime.parse(scannedAtStr) : null;
-    } catch (e) {
-      print('⚠️ UserAttendanceDetail.fromJson: Error parsing scanned_at: $e');
+      scannedAt = scannedAtStr != null ? DateTime.parse(scannedAtStr) : null;    } catch (e) {
+      debugPrint('⚠️ UserAttendanceDetail.fromJson: Error parsing scanned_at: $e');
       scannedAt = null;
     }
     
@@ -249,7 +247,7 @@ class UserAttendanceDetail {
       final timestampStr = json['timestamp'] as String?;
       timestamp = timestampStr != null ? DateTime.parse(timestampStr) : null;
     } catch (e) {
-      print('⚠️ UserAttendanceDetail.fromJson: Error parsing timestamp: $e');
+      debugPrint('⚠️ UserAttendanceDetail.fromJson: Error parsing timestamp: $e');
       timestamp = null;
     }
     
@@ -258,7 +256,7 @@ class UserAttendanceDetail {
       final updatedAtStr = json['updated_at'] as String?;
       updatedAt = updatedAtStr != null ? DateTime.parse(updatedAtStr) : DateTime.now();
     } catch (e) {
-      print('⚠️ UserAttendanceDetail.fromJson: Error parsing updated_at, using current time: $e');
+      debugPrint('⚠️ UserAttendanceDetail.fromJson: Error parsing updated_at, using current time: $e');
       updatedAt = DateTime.now();
     }
     
@@ -383,9 +381,8 @@ class EventUsersResponse {
         scannedCount: 0,
         attendanceRate: 0.0,
         statusBreakdown: {},
-      );
-    } catch (e) {
-      print('⚠️ EventUsersResponse.fromJson: Error parsing statistics: $e');
+      );    } catch (e) {
+      debugPrint('⚠️ EventUsersResponse.fromJson: Error parsing statistics: $e');
       statistics = EventStatistics(
         totalUsers: 0,
         presentCount: 0,
@@ -404,9 +401,8 @@ class EventUsersResponse {
         users = usersData
             .map((userData) => UserAttendanceDetail.fromJson(userData as Map<String, dynamic>))
             .toList();
-      }
-    } catch (e) {
-      print('⚠️ EventUsersResponse.fromJson: Error parsing users: $e');
+      }    } catch (e) {
+      debugPrint('⚠️ EventUsersResponse.fromJson: Error parsing users: $e');
       users = [];
     }
 
@@ -415,10 +411,9 @@ class EventUsersResponse {
     try {
       final eventInfoData = json['event_info'] as Map<String, dynamic>?;
       if (eventInfoData != null) {
-        eventInfo = EventInfo.fromJson(eventInfoData);
-      }
+        eventInfo = EventInfo.fromJson(eventInfoData);      }
     } catch (e) {
-      print('⚠️ EventUsersResponse.fromJson: Event info not available: $e');
+      debugPrint('⚠️ EventUsersResponse.fromJson: Event info not available: $e');
       eventInfo = null;
     }
 
@@ -436,10 +431,9 @@ class EventUsersResponse {
           totalPages: 1,
           totalUsers: totalUsers,
           usersPerPage: users.length,
-        );
-      }
+        );      }
     } catch (e) {
-      print('⚠️ EventUsersResponse.fromJson: Error parsing pagination: $e');
+      debugPrint('⚠️ EventUsersResponse.fromJson: Error parsing pagination: $e');
       pagination = EventUsersPagination(
         currentPage: 1,
         totalPages: 1,

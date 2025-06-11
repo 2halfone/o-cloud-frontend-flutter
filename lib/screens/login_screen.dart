@@ -4,9 +4,8 @@ import '../widgets/custom_text_field.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin {
@@ -74,15 +73,18 @@ class _LoginScreenState extends State<LoginScreen> with TickerProviderStateMixin
             'user_name': userName,
             'is_new_user': false,
           },
+        );      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Invalid email or password. Please try again.')),
         );
       }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Invalid email or password. Please try again.')),
-      );
     }
 
-    setState(() => _isLoading = false);
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
   @override
   Widget build(BuildContext context) {

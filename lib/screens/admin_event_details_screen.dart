@@ -202,11 +202,10 @@ class _AdminEventDetailsScreenState extends State<AdminEventDetailsScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [Color(0xFF11998e), Color(0xFF38ef7d)],
-        ),
-        borderRadius: BorderRadius.circular(16),
+        ),        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF11998e).withOpacity(0.3),
+            color: const Color(0xFF11998e).withValues(alpha: 0.3),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -233,9 +232,8 @@ class _AdminEventDetailsScreenState extends State<AdminEventDetailsScreen> {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -283,9 +281,8 @@ class _AdminEventDetailsScreenState extends State<AdminEventDetailsScreen> {
   Widget _buildHeaderStatItem(String label, String value, IconData icon) {
     return Container(
       padding: const EdgeInsets.all(12),
-      margin: const EdgeInsets.symmetric(horizontal: 4),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.15),
+      margin: const EdgeInsets.symmetric(horizontal: 4),      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -301,10 +298,9 @@ class _AdminEventDetailsScreenState extends State<AdminEventDetailsScreen> {
             ),
           ),
           Text(
-            label,
-            style: TextStyle(
+            label,            style: TextStyle(
               fontSize: 10,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
             textAlign: TextAlign.center,
           ),
@@ -369,9 +365,8 @@ class _AdminEventDetailsScreenState extends State<AdminEventDetailsScreen> {
       },
       backgroundColor: const Color(0xFF0F0F23),
       selectedColor: const Color(0xFF667eea),
-      checkmarkColor: Colors.white,
-      side: BorderSide(
-        color: isSelected ? const Color(0xFF667eea) : Colors.grey.withOpacity(0.3),
+      checkmarkColor: Colors.white,      side: BorderSide(
+        color: isSelected ? const Color(0xFF667eea) : Colors.grey.withValues(alpha: 0.3),
       ),
     );
   }
@@ -520,10 +515,9 @@ class _AdminEventDetailsScreenState extends State<AdminEventDetailsScreen> {
 
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        border: Border(
+      decoration: BoxDecoration(        border: Border(
           bottom: BorderSide(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             width: 1,
           ),
         ),
@@ -661,15 +655,14 @@ class _AdminEventDetailsScreenState extends State<AdminEventDetailsScreen> {
                   DropdownButtonFormField<String>(
                     value: selectedStatus,
                     dropdownColor: const Color(0xFF1A1A2E),
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
+                    style: const TextStyle(color: Colors.white),                    decoration: InputDecoration(
                       labelText: 'Status',
                       labelStyle: TextStyle(color: Colors.grey[400]),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),
@@ -702,15 +695,14 @@ class _AdminEventDetailsScreenState extends State<AdminEventDetailsScreen> {
                   const SizedBox(height: 16),
                   TextField(
                     controller: motivationController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: InputDecoration(
+                    style: const TextStyle(color: Colors.white),                    decoration: InputDecoration(
                       labelText: 'Motivation (Optional)',
                       labelStyle: TextStyle(color: Colors.grey[400]),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
+                        borderSide: BorderSide(color: Colors.grey.withValues(alpha: 0.3)),
                         borderRadius: BorderRadius.circular(8),
                       ),
                     ),

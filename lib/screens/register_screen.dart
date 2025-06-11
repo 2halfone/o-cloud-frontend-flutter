@@ -75,9 +75,8 @@ class _RegisterScreenState extends State<RegisterScreen> with TickerProviderStat
         _emailController.text,
         _passwordController.text,
       );
-      
-      if (mounted) {
-        // Mostra messaggio di successo
+        if (mounted) {
+        // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Registration successful! Welcome!'),

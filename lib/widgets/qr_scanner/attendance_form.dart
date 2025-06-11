@@ -85,8 +85,7 @@ class _AttendanceFormState extends State<AttendanceForm>
       if (mounted) {
         _showSuccessMessage(response.message);
         widget.onSubmitSuccess();
-      }
-    } catch (e) {
+      }    } catch (e) {
       if (mounted) {
         _showErrorMessage('Error during submission: $e');
       }
@@ -98,7 +97,6 @@ class _AttendanceFormState extends State<AttendanceForm>
       }
     }
   }
-
   void _showSuccessMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -117,6 +115,7 @@ class _AttendanceFormState extends State<AttendanceForm>
   }
 
   void _showErrorMessage(String message) {
+    // Simple, clean error message like the original working version
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Row(
@@ -128,10 +127,13 @@ class _AttendanceFormState extends State<AttendanceForm>
         ),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        margin: const EdgeInsets.all(16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+        ),
+        duration: const Duration(seconds: 4),
       ),
-    );
-  }
+    );  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,17 +152,16 @@ class _AttendanceFormState extends State<AttendanceForm>
         position: _slideAnimation,
         child: Container(
           margin: const EdgeInsets.all(20),
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: const Color(0xFF16213E).withOpacity(0.95),
+          padding: const EdgeInsets.all(24),          decoration: BoxDecoration(
+            color: const Color(0xFF16213E).withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 20,
                 offset: const Offset(0, 10),
               ),
@@ -198,10 +199,9 @@ class _AttendanceFormState extends State<AttendanceForm>
             gradient: const LinearGradient(
               colors: [Color(0xFF667eea), Color(0xFF764ba2)],
             ),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
+            borderRadius: BorderRadius.circular(12),            boxShadow: [
               BoxShadow(
-                color: const Color(0xFF667eea).withOpacity(0.3),
+                color: const Color(0xFF667eea).withValues(alpha: 0.3),
                 blurRadius: 8,
                 offset: const Offset(0, 4),
               ),
@@ -243,23 +243,22 @@ class _AttendanceFormState extends State<AttendanceForm>
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
+      decoration: BoxDecoration(        gradient: LinearGradient(
           colors: [
-            Colors.green.withOpacity(0.15),
-            Colors.green.withOpacity(0.05),
+            Colors.green.withValues(alpha: 0.15),
+            Colors.green.withValues(alpha: 0.05),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.green.withOpacity(0.3),
+          color: Colors.green.withValues(alpha: 0.3),
           width: 1.5,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.green.withOpacity(0.1),
+            color: Colors.green.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -271,9 +270,8 @@ class _AttendanceFormState extends State<AttendanceForm>
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.green.withOpacity(0.2),
+                padding: const EdgeInsets.all(8),                decoration: BoxDecoration(
+                  color: Colors.green.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(
@@ -328,12 +326,11 @@ class _AttendanceFormState extends State<AttendanceForm>
         const SizedBox(height: 12),
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
+          padding: const EdgeInsets.symmetric(horizontal: 16),          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: Colors.white.withOpacity(0.1),
+              color: Colors.white.withValues(alpha: 0.1),
             ),
           ),
           child: DropdownButtonHideUnderline(
@@ -439,18 +436,17 @@ class _AttendanceFormState extends State<AttendanceForm>
                   decoration: InputDecoration(
                     hintText: 'Enter family reason...',
                     hintStyle: TextStyle(color: Colors.grey[400]),
-                    filled: true,
-                    fillColor: Colors.white.withOpacity(0.05),
+                    filled: true,                    fillColor: Colors.white.withValues(alpha: 0.05),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
                       borderSide: BorderSide(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                       ),
                     ),
                     focusedBorder: OutlineInputBorder(
@@ -474,8 +470,7 @@ class _AttendanceFormState extends State<AttendanceForm>
                         width: 2,
                       ),
                     ),
-                  ),
-                  validator: (value) {
+                  ),                  validator: (value) {
                     if (requiresMotivation && (value == null || value.trim().isEmpty)) {
                       return 'Family reason is required for this status';
                     }
@@ -495,9 +490,8 @@ class _AttendanceFormState extends State<AttendanceForm>
           child: OutlinedButton(
             onPressed: _isSubmitting ? null : widget.onCancel,
             style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              side: BorderSide(
-                color: Colors.grey.withOpacity(0.3),
+              padding: const EdgeInsets.symmetric(vertical: 16),              side: BorderSide(
+                color: Colors.grey.withValues(alpha: 0.3),
               ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),

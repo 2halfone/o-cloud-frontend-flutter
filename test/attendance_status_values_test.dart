@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_cloud_backend/models/attendance.dart';
 
@@ -12,12 +13,10 @@ void main() {
         ),
         status: AttendanceStatus.present,
         reason: null,
-      );
-
-      final json = request.toJson();
+      );      final json = request.toJson();
       expect(json['status'], equals('present'));
       
-      print('✅ AttendanceStatus.present serializes to: ${json['status']}');
+      debugPrint('✅ AttendanceStatus.present serializes to: ${json['status']}');
     });    test('should have correct JSON values for all status types', () {
       final expectedValues = {
         AttendanceStatus.present: 'present',
@@ -37,11 +36,9 @@ void main() {
           ),
           status: entry.key,
           reason: null,
-        );
-
-        final json = request.toJson();
+        );        final json = request.toJson();
         expect(json['status'], equals(entry.value));
-        print('✅ ${entry.key} → ${json['status']}');
+        debugPrint('✅ ${entry.key} → ${json['status']}');
       }
     });
 
@@ -75,12 +72,11 @@ void main() {
 
         final json = request.toJson();
         final serializedValue = json['status'];
-        
-        expect(backendExpectedValues.contains(serializedValue), true,
+          expect(backendExpectedValues.contains(serializedValue), true,
             reason: 'Status ${appStatusValues[i]} serialized to "$serializedValue" should be in backend expected values');
       }
       
-      print('✅ All status values match backend expectations');
+      debugPrint('✅ All status values match backend expectations');
     });
   });
 }

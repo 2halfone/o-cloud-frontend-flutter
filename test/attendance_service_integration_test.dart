@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/foundation.dart';
 import 'package:go_cloud_backend/services/attendance_service.dart';
 import 'package:go_cloud_backend/models/attendance.dart';
 import 'package:go_cloud_backend/utils/constants.dart';
@@ -108,47 +109,47 @@ void main() {
       });
     });    group('Backend Connectivity', () {
       test('should handle API connectivity check with detailed logging', () async {
-        print('🔧 Starting backend connectivity test...');
-        print('📍 Configured base URL: ${ApiConstants.baseUrl}');
-        print('📍 Auth base URL: ${ApiConstants.authBaseUrl}');
+        debugPrint('🔧 Starting backend connectivity test...');
+        debugPrint('📍 Configured base URL: ${ApiConstants.baseUrl}');
+        debugPrint('📍 Auth base URL: ${ApiConstants.authBaseUrl}');
         
         try {
           final isHealthy = await attendanceService.checkHealthStatus();
           
           if (isHealthy) {
-            print('✅ Backend is running and accessible at ${ApiConstants.baseUrl}');
-            print('🚀 All API endpoints should be working correctly');
+            debugPrint('✅ Backend is running and accessible at ${ApiConstants.baseUrl}');
+            debugPrint('🚀 All API endpoints should be working correctly');
             expect(isHealthy, isTrue);
           } else {
-            print('❌ Backend health check returned false');
-            print('🔍 This could mean:');
-            print('   - Server is running but health endpoint failed');
-            print('   - Server responded with error status');
+            debugPrint('❌ Backend health check returned false');
+            debugPrint('🔍 This could mean:');
+            debugPrint('   - Server is running but health endpoint failed');
+            debugPrint('   - Server responded with error status');
             expect(isHealthy, isFalse);
           }
         } catch (e) {
-          print('💥 Connection error occurred:');
-          print('   Error type: ${e.runtimeType}');
-          print('   Error message: $e');
+          debugPrint('💥 Connection error occurred:');
+          debugPrint('   Error type: ${e.runtimeType}');
+          debugPrint('   Error message: $e');
           
           if (e.toString().contains('Connection refused')) {
-            print('🚨 Connection Refused Analysis:');
-            print('   - Configured URL: ${ApiConstants.baseUrl}');
-            print('   - Check if backend server is running');
-            print('   - Verify server is accessible from this device');
-            print('   - Check firewall and network settings');
+            debugPrint('🚨 Connection Refused Analysis:');
+            debugPrint('   - Configured URL: ${ApiConstants.baseUrl}');
+            debugPrint('   - Check if backend server is running');
+            debugPrint('   - Verify server is accessible from this device');
+            debugPrint('   - Check firewall and network settings');
           } else if (e.toString().contains('localhost')) {
-            print('🚨 Localhost detected in error:');
-            print('   - Error contains localhost reference');
-            print('   - But configured URL is: ${ApiConstants.baseUrl}');
-            print('   - This suggests URL override somewhere in the code');
+            debugPrint('🚨 Localhost detected in error:');
+            debugPrint('   - Error contains localhost reference');
+            debugPrint('   - But configured URL is: ${ApiConstants.baseUrl}');
+            debugPrint('   - This suggests URL override somewhere in the code');
           }
           
-          print('📋 Troubleshooting steps:');
-          print('   1. Verify backend server is running');
-          print('   2. Test manually: curl ${ApiConstants.baseUrl}/health');
-          print('   3. Check network connectivity');
-          print('   4. Verify no URL overrides in test environment');
+          debugPrint('📋 Troubleshooting steps:');
+          debugPrint('   1. Verify backend server is running');
+          debugPrint('   2. Test manually: curl ${ApiConstants.baseUrl}/health');
+          debugPrint('   3. Check network connectivity');
+          debugPrint('   4. Verify no URL overrides in test environment');
           
           // Don't fail the test, just log the error for debugging
           expect(e, isNotNull);

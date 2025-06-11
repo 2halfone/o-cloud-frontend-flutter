@@ -106,8 +106,7 @@ class _StatusManagementWidgetState extends State<StatusManagementWidget>
         _pulseController.forward();
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {        ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error updating status: $e'),
             backgroundColor: Colors.red,
@@ -132,10 +131,9 @@ class _StatusManagementWidgetState extends State<StatusManagementWidget>
           scale: widget.enableRealTimeUpdates ? _pulseAnimation.value : 1.0,
           child: GestureDetector(
             onTap: _isUpdating ? null : _showStatusSelectionDialog,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            child: Container(              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                color: _eventsService.getStatusColor(widget.user.status).withOpacity(0.15),
+                color: _eventsService.getStatusColor(widget.user.status).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: _eventsService.getStatusColor(widget.user.status),
@@ -143,7 +141,7 @@ class _StatusManagementWidgetState extends State<StatusManagementWidget>
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: _eventsService.getStatusColor(widget.user.status).withOpacity(0.3),
+                    color: _eventsService.getStatusColor(widget.user.status).withValues(alpha: 0.3),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -226,13 +224,12 @@ class StatusSelectionDialog extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(16),
-          gradient: LinearGradient(
+          borderRadius: BorderRadius.circular(16),          gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
               const Color(0xFF1A1A2E),
-              const Color(0xFF16213E).withOpacity(0.8),
+              const Color(0xFF16213E).withValues(alpha: 0.8),
             ],
           ),
         ),
@@ -285,16 +282,15 @@ class StatusSelectionDialog extends StatelessWidget {
                       onStatusSelected(status);
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
+                      padding: const EdgeInsets.all(16),                      decoration: BoxDecoration(
                         color: isSelected
-                            ? eventsService.getStatusColor(status).withOpacity(0.2)
+                            ? eventsService.getStatusColor(status).withValues(alpha: 0.2)
                             : Colors.transparent,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
                           color: isSelected
                               ? eventsService.getStatusColor(status)
-                              : Colors.white.withOpacity(0.1),
+                              : Colors.white.withValues(alpha: 0.1),
                           width: isSelected ? 2 : 1,
                         ),
                       ),
@@ -396,15 +392,14 @@ class _StatusChangeConfirmationDialogState
         borderRadius: BorderRadius.circular(16),
       ),
       child: Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
+        padding: const EdgeInsets.all(24),        decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
               const Color(0xFF1A1A2E),
-              const Color(0xFF16213E).withOpacity(0.8),
+              const Color(0xFF16213E).withValues(alpha: 0.8),
             ],
           ),
         ),
@@ -431,10 +426,9 @@ class _StatusChangeConfirmationDialogState
               ],
             ),
             const SizedBox(height: 20),
-            Container(
-              padding: const EdgeInsets.all(16),
+            Container(              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.05),
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -512,14 +506,13 @@ class _StatusChangeConfirmationDialogState
                 style: const TextStyle(color: Colors.white),
                 decoration: InputDecoration(
                   hintText: 'Enter reason for status change...',
-                  hintStyle: const TextStyle(color: Colors.white60),
-                  border: OutlineInputBorder(
+                  hintStyle: const TextStyle(color: Colors.white60),                border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
-                    borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.3)),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -629,15 +622,14 @@ class _BulkStatusManagementWidgetState extends State<BulkStatusManagementWidget>
           borderRadius: BorderRadius.circular(16),
         ),
         child: Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
+          padding: const EdgeInsets.all(24),          decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
                 const Color(0xFF1A1A2E),
-                const Color(0xFF16213E).withOpacity(0.8),
+                const Color(0xFF16213E).withValues(alpha: 0.8),
               ],
             ),
           ),
@@ -681,11 +673,10 @@ class _BulkStatusManagementWidgetState extends State<BulkStatusManagementWidget>
                         widget.onBulkStatusUpdate(widget.selectedUsers, status);
                       },
                       child: Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
+                        padding: const EdgeInsets.all(16),                        decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                           ),
                         ),
                         child: Row(
@@ -744,10 +735,9 @@ class _BulkStatusManagementWidgetState extends State<BulkStatusManagementWidget>
         margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              const Color(0xFF38ef7d).withOpacity(0.1),
-              const Color(0xFF11998e).withOpacity(0.1),
+          gradient: LinearGradient(            colors: [
+              const Color(0xFF38ef7d).withValues(alpha: 0.1),
+              const Color(0xFF11998e).withValues(alpha: 0.1),
             ],
           ),
           borderRadius: BorderRadius.circular(12),

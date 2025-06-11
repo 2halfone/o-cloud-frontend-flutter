@@ -91,11 +91,10 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
             ),
             const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+              padding: const EdgeInsets.all(12),              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -152,18 +151,18 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
           ),
         ],
       ),
-    );
-
-    if (confirmed == true) {
+    );    if (confirmed == true) {
       try {
         // Show loading indicator
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const Center(
+              child: CircularProgressIndicator(),
+            ),
+          );
+        }
 
         // Delete the event
         await _eventsService.deleteEvent(widget.event.eventId);
@@ -326,19 +325,18 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      padding: const EdgeInsets.all(16),      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),
         ],
       ),
-      child: Row(        children: [
+      child: Row(children: [
           Expanded(
             child: _buildStatItem(
               'Total Scans',
@@ -394,13 +392,12 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
         : _scannedUsers.where((u) => u.status == _statusFilter).toList();
 
     return Container(
-      margin: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
+      margin: const EdgeInsets.all(16),      decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.1),
+            color: Colors.grey.withValues(alpha: 0.1),
             blurRadius: 4,
             offset: const Offset(0, 2),
           ),

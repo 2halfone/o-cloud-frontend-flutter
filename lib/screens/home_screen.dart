@@ -6,9 +6,8 @@ import '../widgets/responsive_layout.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
-
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
@@ -29,18 +28,21 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         _users = users;
         _isLoading = false;
-      });
-    } catch (e) {
+      });    } catch (e) {
       setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to load users: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load users: $e')),
+        );
+      }
     }
   }
 
   Future<void> _logout() async {
     await _authService.logout();
-    Navigator.pushReplacementNamed(context, '/login');
+    if (mounted) {
+      Navigator.pushReplacementNamed(context, '/login');
+    }
   }
   @override
   Widget build(BuildContext context) {

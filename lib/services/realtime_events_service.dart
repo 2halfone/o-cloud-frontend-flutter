@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/io.dart';
+import 'package:flutter/foundation.dart';
 import '../models/admin_events.dart';
 import '../utils/token_manager.dart';
 
@@ -40,9 +41,7 @@ class RealTimeEventsService {
         headers: {
           'Authorization': 'Bearer $token',
         },
-      );
-
-      print('🔌 RealTimeEventsService: Connecting to WebSocket...');
+      );      debugPrint('🔌 RealTimeEventsService: Connecting to WebSocket...');
 
       _channel!.stream.listen(
         _handleMessage,
@@ -51,7 +50,7 @@ class RealTimeEventsService {
       );
 
       _isConnected = true;
-      print('✅ RealTimeEventsService: WebSocket connected successfully');
+      debugPrint('✅ RealTimeEventsService: WebSocket connected successfully');
 
       // Send initial connection message
       _sendMessage({
@@ -59,47 +58,42 @@ class RealTimeEventsService {
         'data': {
           'events': ['status_update', 'user_scan', 'event_update']
         }
-      });
-
-    } catch (e) {
-      print('❌ RealTimeEventsService: Connection failed: $e');
+      });    } catch (e) {
+      debugPrint('❌ RealTimeEventsService: Connection failed: $e');
       _isConnected = false;
       _scheduleReconnect();
     }
   }
-
   void _handleMessage(dynamic message) {
     try {
       final data = jsonDecode(message.toString());
-      print('📨 RealTimeEventsService: Received message: $data');
+      debugPrint('📨 RealTimeEventsService: Received message: $data');
 
       final notification = EventUpdateNotification.fromJson(data);
       _updateController?.add(notification);
       
     } catch (e) {
-      print('❌ RealTimeEventsService: Error parsing message: $e');
+      debugPrint('❌ RealTimeEventsService: Error parsing message: $e');
     }
   }
-
   void _handleError(error) {
-    print('❌ RealTimeEventsService: WebSocket error: $error');
+    debugPrint('❌ RealTimeEventsService: WebSocket error: $error');
     _isConnected = false;
     _scheduleReconnect();
   }
 
   void _handleConnectionClosed() {
-    print('🔌 RealTimeEventsService: WebSocket connection closed');
+    debugPrint('🔌 RealTimeEventsService: WebSocket connection closed');
     _isConnected = false;
     _scheduleReconnect();
   }
-
   void _scheduleReconnect() {
     if (_reconnectTimer?.isActive == true) return;
 
-    print('⏰ RealTimeEventsService: Scheduling reconnection in 5 seconds...');
+    debugPrint('⏰ RealTimeEventsService: Scheduling reconnection in 5 seconds...');
     _reconnectTimer = Timer(const Duration(seconds: 5), () {
       if (!_isConnected) {
-        print('🔄 RealTimeEventsService: Attempting to reconnect...');
+        debugPrint('🔄 RealTimeEventsService: Attempting to reconnect...');
         connect();
       }
     });
@@ -114,10 +108,9 @@ class RealTimeEventsService {
     _sendMessage({
       'type': 'subscribe_event',
       'data': {
-        'event_id': eventId
-      }
+        'event_id': eventId      }
     });
-    print('📡 RealTimeEventsService: Subscribed to event: $eventId');
+    debugPrint('📡 RealTimeEventsService: Subscribed to event: $eventId');
   }
 
   Stream<Map<String, dynamic>> subscribeToEventUpdates(String eventId) {
@@ -139,14 +132,13 @@ class RealTimeEventsService {
     _sendMessage({
       'type': 'unsubscribe_event',
       'data': {
-        'event_id': eventId
-      }
+        'event_id': eventId      }
     });
-    print('📡 RealTimeEventsService: Unsubscribed from event: $eventId');
+    debugPrint('📡 RealTimeEventsService: Unsubscribed from event: $eventId');
   }
 
   void disconnect() {
-    print('🔌 RealTimeEventsService: Disconnecting...');
+    debugPrint('🔌 RealTimeEventsService: Disconnecting...');
     _reconnectTimer?.cancel();
     _channel?.sink.close();
     _updateController?.close();
@@ -185,24 +177,22 @@ class EventUpdateNotification {
   bool get isEventUpdate => type == 'event_update';
 
   UserAttendanceDetail? get updatedUser {
-    if (isStatusUpdate || isUserScan) {
-      try {
+    if (isStatusUpdate || isUserScan) {      try {
         return UserAttendanceDetail.fromJson(data['user'] as Map<String, dynamic>);
       } catch (e) {
-        print('❌ EventUpdateNotification: Error parsing user data: $e');
+        debugPrint('❌ EventUpdateNotification: Error parsing user data: $e');
         return null;
       }
     }
     return null;
   }
   EventStatistics? get updatedStatistics {
-    if (data.containsKey('statistics')) {
-      try {
+    if (data.containsKey('statistics')) {      try {
         return EventStatistics.fromJson(data['statistics'] as Map<String, dynamic>);
       } catch (e) {
-        print('❌ EventUpdateNotification: Error parsing statistics: $e');
+        debugPrint('❌ EventUpdateNotification: Error parsing statistics: $e');
         // Log the raw data for debugging
-        print('📊 Raw statistics data: ${data['statistics']}');
+        debugPrint('📊 Raw statistics data: ${data['statistics']}');
         return null;
       }
     }

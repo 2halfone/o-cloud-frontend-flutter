@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
@@ -14,26 +15,32 @@ import '../utils/constants.dart';
 
 class AdminQrPage extends StatefulWidget {
   const AdminQrPage({super.key});
-
   @override
-  _AdminQrPageState createState() => _AdminQrPageState();
+  State<AdminQrPage> createState() => _AdminQrPageState();
 }
 
 class _AdminQrPageState extends State<AdminQrPage> {  final AuthService _authService = AuthService();
   final TextEditingController _eventNameController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _expiresHoursController = TextEditingController();
-  
-  // Global key for capturing QR code widget
+    // Global key for capturing QR code widget
   final GlobalKey _qrKey = GlobalKey();
   
   String? _generatedQRData;
   bool _isLoading = true;
   bool _isGenerating = false;
   bool _isSaving = false;
-  bool _isSharing = false;
-  String? _errorMessage;
+  bool _isSharing = false;  String? _errorMessage;
   String? _successMessage;
+  Color _qrBackgroundColor = Colors.white;
+    // QR Customization variables
+  Color _qrCodeColor = Colors.black;
+  Color _textColor = Colors.black;
+  double _qrSize = 200.0;
+  double _textSize = 16.0;
+  bool _showBorder = false;
+  bool _showShadow = false;
+  String? _expandedPanel; // null, 'colors', 'style', 'size'
 
   @override
   void initState() {
@@ -48,15 +55,9 @@ class _AdminQrPageState extends State<AdminQrPage> {  final AuthService _authSer
     // Use tomorrow's date as default to avoid conflicts
     final tomorrow = DateTime.now().add(const Duration(days: 1));
     _dateController.text = tomorrow.toIso8601String().split('T')[0]; // YYYY-MM-DD format
-    
-    _expiresHoursController.text = '24';
+      _expiresHoursController.text = '24';
   }
 
-  // Helper method to generate different test dates
-  void _setTestDate(int daysFromNow) {
-    final targetDate = DateTime.now().add(Duration(days: daysFromNow));
-    _dateController.text = targetDate.toIso8601String().split('T')[0];
-  }
   @override
   void dispose() {
     _eventNameController.dispose();
@@ -72,10 +73,9 @@ class _AdminQrPageState extends State<AdminQrPage> {  final AuthService _authSer
       if (boundary == null) return null;
       
       ui.Image image = await boundary.toImage(pixelRatio: 3.0);
-      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      return byteData?.buffer.asUint8List();
+      ByteData? byteData = await image.toByteData(format: ui.ImageByteFormat.png);    return byteData?.buffer.asUint8List();
     } catch (e) {
-      print('Error capturing QR code: $e');
+      debugPrint('Error capturing QR code: $e');
       return null;
     }
   }
@@ -101,8 +101,7 @@ class _AdminQrPageState extends State<AdminQrPage> {  final AuthService _authSer
 
       if (result['isSuccess'] == true) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+          ScaffoldMessenger.of(context).showSnackBar(            const SnackBar(
               content: Row(
                 children: [
                   Icon(Icons.check_circle, color: Colors.white),
@@ -314,16 +313,15 @@ class _AdminQrPageState extends State<AdminQrPage> {  final AuthService _authSer
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $token',
         },
-        body: jsonEncode(payload),
-      ).timeout(const Duration(seconds: 15));// Debug: Print response details
-      print('🔍 QR Generation Response:');
-      print('Status Code: ${response.statusCode}');
-      print('Response Body: ${response.body}');
-      print('Response Headers: ${response.headers}');
+        body: jsonEncode(payload),      ).timeout(const Duration(seconds: 15));// Debug: Print response details
+      debugPrint('🔍 QR Generation Response:');
+      debugPrint('Status Code: ${response.statusCode}');
+      debugPrint('Response Body: ${response.body}');
+      debugPrint('Response Headers: ${response.headers}');
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         final responseData = jsonDecode(response.body);
-        print('📦 Parsed Response Data: $responseData');
+        debugPrint('📦 Parsed Response Data: $responseData');
         
         // Handle different response formats
         String qrData = '';
@@ -340,14 +338,12 @@ class _AdminQrPageState extends State<AdminQrPage> {  final AuthService _authSer
           qrData = responseData.values.firstWhere(
             (value) => value is String && value.isNotEmpty,
             orElse: () => responseData.toString(),
-          );
-        }
+          );        }
         
-        print('🎯 Extracted QR Data: $qrData');
-        
-        setState(() {
+        debugPrint('🎯 Extracted QR Data: $qrData');
+          setState(() {
           _generatedQRData = qrData;
-          _successMessage = 'QR Code generated successfully!\nEvent: ${_eventNameController.text}\nDate: ${_dateController.text}';
+          _successMessage = 'QR Code generated successfully with event details!\nEvent: ${_eventNameController.text}\nDate: ${_dateController.text}\n\nThe QR code now includes the event name and date for easy identification.';
           _errorMessage = null;
           _isGenerating = false;
         });
@@ -563,28 +559,7 @@ class _AdminQrPageState extends State<AdminQrPage> {  final AuthService _authSer
                       ),
                     ),
                   ),
-                  
-                  // Quick Date Selection Buttons
-                  const SizedBox(height: 12),
-                  Text(
-                    'Quick Date Selection:',
-                    style: TextStyle(
-                      color: Colors.grey[400],
-                      fontSize: 12,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      _buildQuickDateButton('Tomorrow', 1),
-                      _buildQuickDateButton('2 days', 2),
-                      _buildQuickDateButton('3 days', 3),
-                      _buildQuickDateButton('1 week', 7),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 16),
+                        const SizedBox(height: 16),
                   
                   // Expires Hours Field
                   TextField(
@@ -778,23 +753,158 @@ class _AdminQrPageState extends State<AdminQrPage> {  final AuthService _authSer
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
                       ),
-                    ),                    const SizedBox(height: 24),
+                    ),                    const SizedBox(height: 24),                    // QR Code Section
                     RepaintBoundary(
                       key: _qrKey,
                       child: Container(
-                        padding: const EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: _qrBackgroundColor,
                           borderRadius: BorderRadius.circular(16),
+                          border: _showBorder ? Border.all(
+                            color: _qrCodeColor.withValues(alpha: 0.3),
+                            width: 2,
+                          ) : null,
+                          boxShadow: _showShadow ? [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ] : null,
                         ),
-                        child: QrImageView(
-                          data: _generatedQRData!,
-                          size: 200,
-                          backgroundColor: Colors.white,
-                          foregroundColor: Colors.black,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Event Name
+                            Text(
+                              _eventNameController.text.isNotEmpty 
+                                ? _eventNameController.text 
+                                : 'Event',
+                              style: TextStyle(
+                                fontSize: _textSize,
+                                fontWeight: FontWeight.bold,
+                                color: _textColor,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 8),
+                            // Date
+                            Text(
+                              _dateController.text.isNotEmpty 
+                                ? _dateController.text 
+                                : 'Date',
+                              style: TextStyle(
+                                fontSize: _textSize - 2,
+                                fontWeight: FontWeight.w600,
+                                color: _textColor.withValues(alpha: 0.7),
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                            const SizedBox(height: 16),
+                            // QR Code
+                            QrImageView(
+                              data: _generatedQRData!,
+                              size: _qrSize,
+                              dataModuleStyle: QrDataModuleStyle(
+                                dataModuleShape: QrDataModuleShape.square,
+                                color: _qrCodeColor,
+                              ),
+                              eyeStyle: QrEyeStyle(
+                                eyeShape: QrEyeShape.square,
+                                color: _qrCodeColor,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            // Footer text
+                            Text(
+                              'Scan to register attendance',
+                              style: TextStyle(
+                                fontSize: _textSize - 4,
+                                color: _textColor.withValues(alpha: 0.6),
+                                fontStyle: FontStyle.italic,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ],
                         ),
                       ),
+                    ),                    const SizedBox(height: 16),
+                    
+                    // Minimal QR Customization Buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        _buildCustomizationButton(
+                          'Colors',
+                          Icons.palette,
+                          'colors',
+                          const Color(0xFF667eea),
+                        ),
+                        _buildCustomizationButton(
+                          'Style',
+                          Icons.style,
+                          'style',
+                          const Color(0xFF4CAF50),
+                        ),
+                        _buildCustomizationButton(
+                          'Size',
+                          Icons.photo_size_select_large,
+                          'size',
+                          const Color(0xFFFF9800),
+                        ),
+                      ],
                     ),
+                    
+                    // Expanded Options Panel
+                    if (_expandedPanel != null) ...[
+                      const SizedBox(height: 16),
+                      AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        curve: Curves.easeInOut,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF0f0f23),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _getPanelColor(_expandedPanel!).withValues(alpha: 0.3),
+                          ),
+                        ),
+                        child: Column(
+                          children: [
+                            // Header with close button
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  _getPanelTitle(_expandedPanel!),
+                                  style: TextStyle(
+                                    color: _getPanelColor(_expandedPanel!),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    setState(() {
+                                      _expandedPanel = null;
+                                    });
+                                  },
+                                  child: Icon(
+                                    Icons.close,
+                                    color: Colors.grey[400],
+                                    size: 20,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            // Panel content
+                            _buildPanelContent(_expandedPanel!),
+                          ],
+                        ),
+                      ),
+                    ],
                     
                     const SizedBox(height: 20),
                     
@@ -931,28 +1041,353 @@ class _AdminQrPageState extends State<AdminQrPage> {  final AuthService _authSer
                 ),
               ),
             ],
+          ],        ),      ),
+    );  }
+  // Minimal Customization Button System  // Minimal Customization Button System
+  Widget _buildCustomizationButton(String label, IconData icon, String panelId, Color color) {
+    final bool isActive = _expandedPanel == panelId;
+    
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _expandedPanel = isActive ? null : panelId;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: isActive 
+            ? color.withValues(alpha: 0.2) 
+            : const Color(0xFF0f0f23),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isActive ? color : Colors.grey.withValues(alpha: 0.3),
+            width: isActive ? 2 : 1,
+          ),
+          boxShadow: isActive ? [
+            BoxShadow(
+              color: color.withValues(alpha: 0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ] : [],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 24,
+              color: isActive ? color : Colors.grey[400],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isActive ? color : Colors.grey[400],
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
-        ),      ),
+        ),
+      ),
     );
   }
 
-  // Helper method to build quick date selection buttons
-  Widget _buildQuickDateButton(String label, int daysFromNow) {
-    return ElevatedButton(
-      onPressed: () => _setTestDate(daysFromNow),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF667eea).withValues(alpha: 0.3),
-        foregroundColor: const Color(0xFF667eea),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
+  // Get panel color based on panel type
+  Color _getPanelColor(String panelId) {
+    switch (panelId) {
+      case 'colors':
+        return const Color(0xFF667eea);
+      case 'style':
+        return const Color(0xFF4CAF50);
+      case 'size':
+        return const Color(0xFFFF9800);
+      default:
+        return const Color(0xFF667eea);
+    }
+  }
+
+  // Get panel title based on panel type
+  String _getPanelTitle(String panelId) {
+    switch (panelId) {
+      case 'colors':
+        return 'Color Options';
+      case 'style':
+        return 'Style Options';
+      case 'size':
+        return 'Size Options';
+      default:
+        return 'Options';
+    }
+  }
+
+  // Build panel content based on panel type
+  Widget _buildPanelContent(String panelId) {
+    switch (panelId) {
+      case 'colors':
+        return _buildColorsPanel();
+      case 'style':
+        return _buildStylePanel();
+      case 'size':
+        return _buildSizePanel();
+      default:
+        return _buildColorsPanel();
+    }
+  }
+
+  // Colors panel for minimal interface
+  Widget _buildColorsPanel() {
+    return Column(
+      children: [
+        // Background Colors
+        _buildMinimalColorSection(
+          'Background',
+          [
+            Colors.white,
+            const Color(0xFFF5F5F5),
+            const Color(0xFFE3F2FD),
+            const Color(0xFFE8F5E8),
+            const Color(0xFFFFF3E0),
+          ],
+          _qrBackgroundColor,
+          (color) => setState(() => _qrBackgroundColor = color),
         ),
-        elevation: 0,
+        const SizedBox(height: 16),
+        // QR Code Colors
+        _buildMinimalColorSection(
+          'QR Code',
+          [
+            Colors.black,
+            const Color(0xFF1565C0),
+            const Color(0xFF2E7D32),
+            const Color(0xFFE65100),
+            const Color(0xFF6A1B9A),
+          ],
+          _qrCodeColor,
+          (color) => setState(() => _qrCodeColor = color),
+        ),
+        const SizedBox(height: 16),
+        // Text Colors
+        _buildMinimalColorSection(
+          'Text',
+          [
+            Colors.black,
+            const Color(0xFF424242),
+            const Color(0xFF1565C0),
+            const Color(0xFF2E7D32),
+            const Color(0xFF6A1B9A),
+          ],
+          _textColor,
+          (color) => setState(() => _textColor = color),
+        ),
+      ],
+    );
+  }
+
+  // Style panel for minimal interface
+  Widget _buildStylePanel() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _buildMinimalStyleToggle(
+          'Border',
+          Icons.border_all,
+          _showBorder,
+          (value) => setState(() => _showBorder = value),
+        ),
+        _buildMinimalStyleToggle(
+          'Shadow',
+          Icons.blur_on,
+          _showShadow,
+          (value) => setState(() => _showShadow = value),
+        ),
+      ],
+    );
+  }
+
+  // Size panel for minimal interface
+  Widget _buildSizePanel() {
+    return Column(
+      children: [
+        _buildMinimalSlider(
+          'QR Size',
+          _qrSize,
+          150.0,
+          300.0,
+          (value) => setState(() => _qrSize = value),
+        ),
+        const SizedBox(height: 20),
+        _buildMinimalSlider(
+          'Text Size',
+          _textSize,
+          12.0,
+          24.0,
+          (value) => setState(() => _textSize = value),
+        ),
+      ],
+    );
+  }
+
+  // Minimal color section helper
+  Widget _buildMinimalColorSection(String title, List<Color> colors, Color selectedColor, Function(Color) onColorSelected) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            color: Color(0xFF667eea),
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: colors.map((color) => 
+            _buildMinimalColorOption(color, selectedColor == color, () => onColorSelected(color))
+          ).toList(),
+        ),
+      ],
+    );
+  }
+
+  // Minimal color option helper
+  Widget _buildMinimalColorOption(Color color, bool isSelected, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF667eea) : Colors.grey.withValues(alpha: 0.3),
+            width: isSelected ? 3 : 1,
+          ),
+          boxShadow: isSelected ? [
+            BoxShadow(
+              color: const Color(0xFF667eea).withValues(alpha: 0.4),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ] : [],
+        ),
+        child: isSelected
+            ? const Icon(
+                Icons.check,
+                size: 18,
+                color: Color(0xFF667eea),
+              )
+            : null,
       ),
-      child: Text(
-        label,
-        style: const TextStyle(fontSize: 12),
+    );
+  }
+
+  // Minimal style toggle helper
+  Widget _buildMinimalStyleToggle(String label, IconData icon, bool value, Function(bool) onChanged) {
+    return GestureDetector(
+      onTap: () => onChanged(!value),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+        decoration: BoxDecoration(
+          color: value 
+            ? const Color(0xFF4CAF50).withValues(alpha: 0.2)
+            : Colors.grey.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: value 
+              ? const Color(0xFF4CAF50)
+              : Colors.grey.withValues(alpha: 0.3),
+            width: value ? 2 : 1,
+          ),
+          boxShadow: value ? [
+            BoxShadow(
+              color: const Color(0xFF4CAF50).withValues(alpha: 0.3),
+              blurRadius: 6,
+              offset: const Offset(0, 2),
+            ),
+          ] : [],
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 24,
+              color: value ? const Color(0xFF4CAF50) : Colors.grey[400],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              label,
+              style: TextStyle(
+                color: value ? const Color(0xFF4CAF50) : Colors.grey[400],
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
       ),
+    );
+  }
+
+  // Minimal slider helper
+  Widget _buildMinimalSlider(String label, double value, double min, double max, Function(double) onChanged) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              label,
+              style: const TextStyle(
+                color: Color(0xFFFF9800),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFF9800).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(6),
+              ),
+              child: Text(
+                '${value.round()}',
+                style: const TextStyle(
+                  color: Color(0xFFFF9800),
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        SliderTheme(
+          data: SliderTheme.of(context).copyWith(
+            activeTrackColor: const Color(0xFFFF9800),
+            thumbColor: const Color(0xFFFF9800),
+            overlayColor: const Color(0xFFFF9800).withValues(alpha: 0.2),
+            inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
+            trackHeight: 4,
+            thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 8),
+          ),
+          child: Slider(
+            value: value,
+            min: min,
+            max: max,
+            onChanged: onChanged,
+          ),
+        ),
+      ],
     );
   }
 }

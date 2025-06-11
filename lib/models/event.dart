@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 /// Classe Event per rappresentare un evento con parsing JSON robusto
 /// Basata sull'esperienza acquisita con EventStatistics per gestire
 /// valori null e type casting sicuri
@@ -37,11 +39,10 @@ class Event {
     
     // Parsing sicuro delle date ISO 8601
     DateTime createdAt;
-    try {
-      final createdAtStr = json['created_at'] as String? ?? json['createdAt'] as String?;
+    try {      final createdAtStr = json['created_at'] as String? ?? json['createdAt'] as String?;
       createdAt = createdAtStr != null ? DateTime.parse(createdAtStr) : DateTime.now();
     } catch (e) {
-      print('⚠️ Event.fromJson: Error parsing created_at, using current time: $e');
+      debugPrint('⚠️ Event.fromJson: Error parsing created_at, using current time: $e');
       createdAt = DateTime.now();
     }
 
@@ -50,7 +51,7 @@ class Event {
       final expiresAtStr = json['expires_at'] as String? ?? json['expiresAt'] as String?;
       expiresAt = expiresAtStr != null ? DateTime.parse(expiresAtStr) : DateTime.now().add(const Duration(days: 1));
     } catch (e) {
-      print('⚠️ Event.fromJson: Error parsing expires_at, using tomorrow: $e');
+      debugPrint('⚠️ Event.fromJson: Error parsing expires_at, using tomorrow: $e');
       expiresAt = DateTime.now().add(const Duration(days: 1));
     }
 
@@ -86,10 +87,9 @@ class Event {
             // Type casting sicuro per i valori
             final intValue = (entry.value as num?)?.toInt() ?? 0;
             statusBreakdown[entry.key] = intValue;
-          }
-        }
+          }        }
       } catch (e) {
-        print('⚠️ Event.fromJson: Error parsing status_breakdown: $e');
+        debugPrint('⚠️ Event.fromJson: Error parsing status_breakdown: $e');
         statusBreakdown = {};
       }
     }
@@ -147,7 +147,7 @@ class Event {
     return buffer.toString();
   }
 
-  /// Helper getters per comodità
+  /// Helper getters for convenience
   bool get isExpired => DateTime.now().isAfter(expiresAt);
   bool get isValid => isActive && !isExpired;
   double get attendancePercentage => totalUsers > 0 ? (presentCount / totalUsers) * 100 : 0.0;

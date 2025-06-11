@@ -215,21 +215,19 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
-        borderRadius: BorderRadius.circular(12),
+        color: const Color(0xFF1A1A2E),        borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFF667eea).withOpacity(0.3),
+          color: const Color(0xFF667eea).withValues(alpha: 0.3),
           width: 1,
         ),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildCompactStatItem('Events', totalEvents.toString(), Icons.event),
-          Container(
+          _buildCompactStatItem('Events', totalEvents.toString(), Icons.event),          Container(
             width: 1,
             height: 30,
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.grey.withValues(alpha: 0.3),
           ),
           _buildCompactStatItem('Active', activeEvents.toString(), Icons.radio_button_checked),
         ],
@@ -272,15 +270,14 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
-        borderRadius: BorderRadius.circular(16),
+        color: const Color(0xFF1A1A2E),        borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: isActive ? Colors.green.withOpacity(0.3) : Colors.grey.withOpacity(0.2),
+          color: isActive ? Colors.green.withValues(alpha: 0.3) : Colors.grey.withValues(alpha: 0.2),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
             offset: const Offset(0, 4),
           ),
@@ -317,10 +314,9 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                Container(                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isActive ? Colors.green.withOpacity(0.2) : Colors.grey.withOpacity(0.2),
+                    color: isActive ? Colors.green.withValues(alpha: 0.2) : Colors.grey.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -442,13 +438,12 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
   }
 
   Widget _buildEventStatItem(String label, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(12),
+    return Container(      padding: const EdgeInsets.all(12),
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -507,13 +502,12 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
             final statusInfo = statusIcons[entry.key];
             if (statusInfo == null) return const SizedBox.shrink();
             
-            return Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            return Container(              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: (statusInfo['color'] as Color).withOpacity(0.15),
+                color: (statusInfo['color'] as Color).withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
-                  color: (statusInfo['color'] as Color).withOpacity(0.3),
+                  color: (statusInfo['color'] as Color).withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
@@ -578,13 +572,12 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
               'Are you sure you want to delete this event?',
               style: TextStyle(color: Colors.grey[300]),
             ),
-            const SizedBox(height: 12),
-            Container(
+            const SizedBox(height: 12),            Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.red.withOpacity(0.1),
+                color: Colors.red.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withOpacity(0.3)),
+                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,20 +634,20 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
           ),
         ],
       ),
-    );
-
-    if (confirmed == true) {
+    );    if (confirmed == true) {
       try {
         // Show loading indicator
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667eea)),
+        if (mounted) {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667eea)),
+              ),
             ),
-          ),
-        );
+          );
+        }
 
         // Delete the event
         await _eventsService.deleteEvent(event.eventId);
