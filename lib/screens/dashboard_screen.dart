@@ -45,15 +45,22 @@ class _DashboardScreenState extends State<DashboardScreen>
     
     _animations.startAnimations();
   }  Future<void> _loadUserData() async {
+    print('DEBUG dashboard_screen: _loadUserData starting...');
+    
     final isAdmin = await _authService.isUserAdmin();
     final userEmail = await _authService.getUserEmail();
     final extractedName = _extractUserName(userEmail ?? '');
+    
+    print('DEBUG dashboard_screen: isAdmin = $isAdmin');
+    print('DEBUG dashboard_screen: userEmail = $userEmail');
+    print('DEBUG dashboard_screen: extractedName = $extractedName');
     
     if (mounted) {
       setState(() {
         _isAdmin = isAdmin;
         _userName = extractedName;
       });
+      print('DEBUG dashboard_screen: State updated - _isAdmin = $_isAdmin, _userName = $_userName');
     }
   }
   String _extractUserName(String email) {
@@ -93,13 +100,13 @@ class _DashboardScreenState extends State<DashboardScreen>
                   
                   // Welcome Card
                   _buildWelcomeCard(),
+                    const SizedBox(height: 32),                  // Services Grid
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                    child: ServiceGrid(isAdmin: _isAdmin),
+                  ),
                   
                   const SizedBox(height: 32),
-                  
-                  // Services Grid
-                  ServiceGrid(isAdmin: _isAdmin),
-                  
-                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -107,10 +114,9 @@ class _DashboardScreenState extends State<DashboardScreen>
         ),
       ),
     );
-  }
-  Widget _buildWelcomeCard() {
+  }  Widget _buildWelcomeCard() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.all(24),

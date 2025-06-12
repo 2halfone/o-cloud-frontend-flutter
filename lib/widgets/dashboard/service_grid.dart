@@ -4,6 +4,7 @@ import '../../screens/admin_logs_screen.dart';
 import '../../screens/qr_scanner_screen.dart';
 import '../../screens/admin_qr_page.dart';
 import '../../screens/admin_events_monitor_screen.dart';
+import '../../screens/prometheus_monitor_screen.dart';
 
 class ServiceGrid extends StatelessWidget {
   final bool isAdmin;
@@ -15,11 +16,13 @@ class ServiceGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cards = _buildServiceCards(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 24.0),
+          padding: EdgeInsets.symmetric(horizontal: 12.0),
           child: Text(
             'Services',
             style: TextStyle(
@@ -29,22 +32,26 @@ class ServiceGrid extends StatelessWidget {
             ),
           ),
         ),
-        const SizedBox(height: 16),        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),          child: GridView.count(
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          child: GridView.count(
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
+            crossAxisSpacing: 16,
+            mainAxisSpacing: 16,
             childAspectRatio: 1.0,
-            children: _buildServiceCards(context),
+            children: cards,
           ),
         ),
       ],
     );
   }
   List<Widget> _buildServiceCards(BuildContext context) {
-    List<Widget> cards = [      // QR Scanner - always visible for everyone
+    // SERVIZI ATTIVI (implementati) - IN ALTO
+    List<Widget> cards = [
+      // QR Scanner - sempre visibile per tutti (ATTIVO)
       ResponsiveServiceCard(
         title: 'QR Scanner',
         description: 'Scan QR for attendance',
@@ -53,44 +60,21 @@ class ServiceGrid extends StatelessWidget {
         onTap: () => _navigateToQRScanner(context),
         isEnabled: true,
       ),
-        // Chat Service - visible for everyone
-      ResponsiveServiceCard(
-        title: 'Chat Service',
-        description: 'Real-time messaging',
-        icon: Icons.chat_rounded,
-        gradientColors: const [Color(0xFF667eea), Color(0xFF764ba2)],
-        onTap: () => _navigateToChatService(context),
-        isEnabled: true,
-      ),
-        // Shop - visible for everyone
-      ResponsiveServiceCard(
-        title: 'Shop',
-        description: 'Online marketplace',
-        icon: Icons.store_rounded,
-        gradientColors: const [Color(0xFF4facfe), Color(0xFF00f2fe)],
-        onTap: () => _navigateToShop(context),
-        isEnabled: true,
-      ),
-        // Events - visible for everyone
-      ResponsiveServiceCard(
-        title: 'Events',
-        description: 'Event management',
-        icon: Icons.event_rounded,
-        gradientColors: const [Color(0xFFf093fb), Color(0xFFf5576c)],
-        onTap: () => _navigateToEvents(context),
-        isEnabled: true,
-      ),
-        // Calendar - visible for everyone
-      ResponsiveServiceCard(
-        title: 'Calendar',
-        description: 'Schedule & planning',
-        icon: Icons.calendar_today_rounded,
-        gradientColors: const [Color(0xFFa8edea), Color(0xFFfed6e3)],
-        onTap: () => _navigateToCalendar(context),
-        isEnabled: true,
-      ),
-    ];    // Additional services only for admin
-    if (isAdmin) {      cards.addAll([        ResponsiveServiceCard(
+    ];
+    
+    // ADMIN SERVICES (se admin) - ATTIVI
+    if (isAdmin) {
+      cards.addAll([
+        // Prometheus - monitoraggio sistema (SOLO ADMIN)
+        ResponsiveServiceCard(
+          title: 'Prometheus',
+          description: 'System monitoring',
+          icon: Icons.monitor_heart_rounded,
+          gradientColors: const [Color(0xFFfbc2eb), Color(0xFFa6c1ee)],
+          onTap: () => _navigateToPrometheus(context),
+          isEnabled: true,
+        ),
+        ResponsiveServiceCard(
           title: 'QR Generator',
           description: 'Generate QR codes',
           icon: Icons.qr_code,
@@ -114,26 +98,70 @@ class ServiceGrid extends StatelessWidget {
           onTap: () => _navigateToAnalytics(context),
           isEnabled: true,
         ),
+      ]);
+    }
+    
+    // SERVIZI FUTURI (non implementati) - IN BASSO
+    cards.addAll([
+      // Chat Service - FUTURO
+      ResponsiveServiceCard(
+        title: 'Chat Service',
+        description: 'Coming soon',
+        icon: Icons.chat_rounded,
+        gradientColors: const [Color(0xFF9E9E9E), Color(0xFF757575)],
+        onTap: () => _showComingSoonDialog(context, 'Chat Service'),
+        isEnabled: false,
+      ),
+      
+      // Shop - FUTURO
+      ResponsiveServiceCard(
+        title: 'Shop',
+        description: 'Coming soon',
+        icon: Icons.store_rounded,
+        gradientColors: const [Color(0xFF9E9E9E), Color(0xFF757575)],
+        onTap: () => _showComingSoonDialog(context, 'Shop'),
+        isEnabled: false,
+      ),
+      
+      // Events - FUTURO
+      ResponsiveServiceCard(
+        title: 'Events',
+        description: 'Coming soon',
+        icon: Icons.event_rounded,
+        gradientColors: const [Color(0xFF9E9E9E), Color(0xFF757575)],
+        onTap: () => _showComingSoonDialog(context, 'Events'),
+        isEnabled: false,
+      ),
+      
+      // Calendar - FUTURO
+      ResponsiveServiceCard(
+        title: 'Calendar',
+        description: 'Coming soon',
+        icon: Icons.calendar_today_rounded,
+        gradientColors: const [Color(0xFF9E9E9E), Color(0xFF757575)],
+        onTap: () => _showComingSoonDialog(context, 'Calendar'),
+        isEnabled: false,
+      ),
+    ]);
+    
+    // Solo per admin: Cloud Storage - FUTURO
+    if (isAdmin) {
+      cards.add(
         ResponsiveServiceCard(
           title: 'Cloud Storage',
-          description: 'File management',
+          description: 'Coming soon',
           icon: Icons.cloud_upload_rounded,
-          gradientColors: const [Color(0xFF89f7fe), Color(0xFF66a6ff)],
-          onTap: () => _navigateToCloudStorage(context),
-          isEnabled: true,        ),
-        ResponsiveServiceCard(
-          title: 'Security',
-          description: 'Security monitoring',
-          icon: Icons.security_rounded,
-          gradientColors: const [Color(0xFFfbc2eb), Color(0xFFa6c1ee)],
-          onTap: () => _navigateToSecurity(context),
-          isEnabled: true,
+          gradientColors: const [Color(0xFF9E9E9E), Color(0xFF757575)],
+          onTap: () => _showComingSoonDialog(context, 'Cloud Storage'),
+          isEnabled: false,
         ),
-      ]);
+      );
     }
 
     return cards;
-  }  void _navigateToQRScanner(BuildContext context) {
+  }
+
+  void _navigateToQRScanner(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -141,6 +169,7 @@ class ServiceGrid extends StatelessWidget {
       ),
     );
   }
+
   void _navigateToQRGenerator(BuildContext context) {
     Navigator.push(
       context,
@@ -159,21 +188,6 @@ class ServiceGrid extends StatelessWidget {
     );
   }
 
-  void _navigateToChatService(BuildContext context) {
-    _showComingSoonDialog(context, 'Chat Service');
-  }
-
-  void _navigateToShop(BuildContext context) {
-    _showComingSoonDialog(context, 'Shop');
-  }
-
-  void _navigateToEvents(BuildContext context) {
-    _showComingSoonDialog(context, 'Events');
-  }
-  void _navigateToCalendar(BuildContext context) {
-    _showComingSoonDialog(context, 'Calendar');
-  }
-
   void _navigateToAnalytics(BuildContext context) {
     Navigator.push(
       context,
@@ -183,12 +197,13 @@ class ServiceGrid extends StatelessWidget {
     );
   }
 
-  void _navigateToCloudStorage(BuildContext context) {
-    _showComingSoonDialog(context, 'Cloud Storage');
-  }
-
-  void _navigateToSecurity(BuildContext context) {
-    _showComingSoonDialog(context, 'Security');
+  void _navigateToPrometheus(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PrometheusMonitorScreen(),
+      ),
+    );
   }
 
   void _showComingSoonDialog(BuildContext context, String feature) {

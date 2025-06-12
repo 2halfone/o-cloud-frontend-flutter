@@ -1,0 +1,375 @@
+# Dashboard API - Documentazione Backend
+
+## 📋 Panoramica
+
+Il **Dashboard API** espone dati di monitoraggio in tempo reale dal sistema Prometheus per la creazione di dashboard personalizzate.
+
+**Configurazione:**
+- **Porta:** 3003
+- **URL Produzione:** http://34.140.122.146:3003
+- **Formato:** JSON
+- **CORS:** Abilitato
+
+---
+
+## 🔌 Endpoints API
+
+### 1. Health Check
+```
+GET /health
+```
+
+**Risposta:**
+```json
+{
+  "status": "healthy",
+  "service": "dashboard-api",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+### 2. Dashboard Completo
+```
+GET /api/dashboard/personal
+```
+
+**Risposta completa:**
+```json
+{  "system_health": {
+    "overall_status": "HEALTHY",
+    "services": [
+      {
+        "name": "auth-service",
+        "status": "UP",
+        "response_time_ms": 67.2,
+        "uptime_percent": 99.8,
+        "last_check": "2024-01-15T10:29:50Z"
+      },
+      {
+        "name": "user-service", 
+        "status": "UP",
+        "response_time_ms": 98.6,
+        "uptime_percent": 99.5,
+        "last_check": "2024-01-15T10:29:45Z"
+      },
+      {
+        "name": "gateway",
+        "status": "UP", 
+        "response_time_ms": 45.2,
+        "uptime_percent": 99.9,
+        "last_check": "2024-01-15T10:29:55Z"
+      }
+    ],
+    "performance": {
+      "avg_response_time_ms": 70.3,
+      "requests_per_second": 127.5,
+      "error_rate_percent": 1.8,
+      "throughput_mbps": 15.6
+    },
+    "resource_usage": {
+      "cpu_usage_percent": 23.5,
+      "memory_usage_percent": 67.2,
+      "disk_usage_percent": 45.8,
+      "network_usage_percent": 12.3
+    }
+  },"security_metrics": {
+    "authentication_stats": {
+      "successful_logins_24h": 184,
+      "failed_attempts_24h": 12,
+      "success_rate_percent": 93.9,
+      "suspicious_activity_count": 3
+    },
+    "security_alerts": [
+      {
+        "type": "FAILED_LOGIN",
+        "severity": "MEDIUM",
+        "message": "Multiple failed login attempts from suspicious IP",
+        "timestamp": "2024-01-15T09:45:00Z",
+        "ip_address": "192.168.1.100",
+        "user_agent": "Mozilla/5.0..."
+      }
+    ],
+    "active_sessions": {
+      "total_active": 45,
+      "sessions_by_device": [
+        {
+          "device_type": "Desktop",
+          "count": 15
+        },
+        {
+          "device_type": "Mobile", 
+          "count": 8
+        },
+        {
+          "device_type": "Tablet",
+          "count": 3
+        }
+      ],
+      "sessions_by_location": [
+        {
+          "country": "Italy",
+          "city": "Rome",
+          "count": 20
+        },
+        {
+          "country": "Italy",
+          "city": "Milan",
+          "count": 6
+        }
+      ]
+    },
+    "login_patterns": {
+      "peak_hours": [
+        {
+          "hour": 9,
+          "count": 45
+        },
+        {
+          "hour": 14,
+          "count": 38
+        }
+      ],
+      "weekly_pattern": [
+        {
+          "day": "Monday",
+          "count": 120
+        },
+        {
+          "day": "Tuesday", 
+          "count": 95
+        }
+      ],
+      "geographic_spread": [
+        {
+          "country": "Italy",
+          "login_count": 120
+        },
+        {
+          "country": "Germany", 
+          "login_count": 45
+        }
+      ]
+    }
+  },  "analytics": {
+    "qr_code_analytics": {
+      "total_scans_24h": 156,
+      "scans_per_hour": [
+        {
+          "hour": 8,
+          "count": 12
+        },
+        {
+          "hour": 9,
+          "count": 34
+        }
+      ],
+      "top_scan_locations": [
+        {
+          "location": "Main Entrance",
+          "count": 45
+        },
+        {
+          "location": "Conference Room A",
+          "count": 38
+        }
+      ],
+      "scan_success_rate": 98.5,
+      "average_scan_time_ms": 245.7
+    },
+    "user_behavior": {
+      "most_active_users": [
+        {
+          "user_id": "user_001",
+          "username": "mario.rossi",
+          "activity_count": 67,
+          "last_active": "2024-01-15T10:15:00Z"
+        },
+        {
+          "user_id": "user_002", 
+          "username": "lucia.bianchi",
+          "activity_count": 52,
+          "last_active": "2024-01-15T09:45:00Z"
+        }
+      ],
+      "activity_by_time_slot": [
+        {
+          "time_slot": "08:00-12:00",
+          "users": 45,
+          "actions": 234
+        },
+        {
+          "time_slot": "14:00-18:00",
+          "users": 38,
+          "actions": 189
+        }
+      ],
+      "feature_usage": [
+        {
+          "feature": "QR Scanner",
+          "usage_count": 234,
+          "percentage": 45.2
+        },
+        {
+          "feature": "Profile Management",
+          "usage_count": 189,
+          "percentage": 36.5
+        }
+      ]
+    },
+    "attendance_stats": {
+      "total_events_24h": 89,
+      "attendance_rate_percent": 87.5,
+      "peak_attendance_hours": [
+        {
+          "hour": 9,
+          "count": 67
+        },
+        {
+          "hour": 14,
+          "count": 45
+        }
+      ],
+      "department_stats": [
+        {
+          "department": "Engineering",
+          "attendance_rate": 92.5,
+          "total_employees": 45
+        },
+        {
+          "department": "Marketing",
+          "attendance_rate": 85.2,
+          "total_employees": 23
+        }
+      ]
+    },
+    "api_usage_stats": {
+      "total_requests_24h": 2847,
+      "top_endpoints": [
+        {
+          "endpoint": "/api/auth/login",
+          "request_count": 456,
+          "avg_response_ms": 67.2
+        },
+        {
+          "endpoint": "/api/qr/scan",
+          "request_count": 234,
+          "avg_response_ms": 23.8
+        }
+      ],
+      "response_times_by_api": [
+        {
+          "api": "auth-service",
+          "avg_response_ms": 67.2,
+          "p95_response_ms": 156.8
+        },
+        {
+          "api": "user-service",
+          "avg_response_ms": 98.6,
+          "p95_response_ms": 234.5
+        },
+        {
+          "api": "gateway",
+          "avg_response_ms": 45.2,
+          "p95_response_ms": 123.8
+        }
+      ],
+      "errors_by_endpoint": [
+        {
+          "endpoint": "/api/auth/verify",
+          "error_count": 23,
+          "error_rate_percent": 2.1
+        },
+        {
+          "endpoint": "/api/qr/validate",
+          "error_count": 15,
+          "error_rate_percent": 1.8
+        }
+      ]
+    },
+    "database_metrics": {
+      "connections_active": 15,
+      "queries_per_second": 89.7,
+      "slow_queries_count": 3,
+      "cache_hit_rate_percent": 92.4,
+      "database_size": "2.3 GB"
+    }
+  },
+  "user_info": {
+    "username": "admin",
+    "role": "Administrator",
+    "last_login": "2024-01-15T08:30:00Z"
+  },
+  "metadata": {
+    "timestamp": "2024-01-15T10:30:00Z",
+    "data_source": "prometheus",
+    "api_version": "1.0.0"
+  }
+}
+```
+
+---
+
+## ⚠️ Errori API
+
+### Servizio Non Disponibile
+```json
+{
+  "error": "service_unavailable",
+  "message": "Dashboard API service is temporarily unavailable",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "status_code": 503
+}
+```
+
+### Prometheus Non Raggiungibile
+```json
+{
+  "error": "prometheus_unavailable", 
+  "message": "Cannot connect to Prometheus server",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "status_code": 502
+}
+```
+
+---
+
+## 🔧 Configurazione
+
+**Rate Limiting:** 100 richieste/minuto per IP
+**Headers Risposta:**
+```
+Content-Type: application/json
+Access-Control-Allow-Origin: *
+X-RateLimit-Limit: 100
+X-RateLimit-Remaining: 99
+```
+
+---
+
+## 🚀 Esempi di Uso
+
+### Test Health Check
+```bash
+curl http://34.140.122.146:3003/health
+```
+
+### Fetch Dashboard Data
+```bash
+curl http://34.140.122.146:3003/api/dashboard/personal
+```
+
+---
+
+## 📋 Status Codes
+
+| Code | Descrizione |
+|------|-------------|
+| 200 | Richiesta successful |
+| 400 | Parametri non validi |
+| 500 | Errore server |
+| 502 | Prometheus non disponibile |
+| 503 | Servizio temporaneamente down |
+
+---
+
+**Dashboard API è operativo su porta 3003 e fornisce dati di monitoraggio in tempo reale dal sistema Prometheus.**

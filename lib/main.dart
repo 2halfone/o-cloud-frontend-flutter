@@ -7,6 +7,7 @@ import 'screens/welcome_screen.dart';
 import 'screens/user_detail_screen.dart';
 
 void main() {
+  print('DEBUG main.dart: App starting...');
   runApp(const MyApp());
 }
 
@@ -49,17 +50,23 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context, listen: false);
-    
-    return FutureBuilder<bool>(
+      return FutureBuilder<bool>(
       future: authService.isLoggedIn(),
       builder: (context, snapshot) {
+        print('DEBUG AuthWrapper: ConnectionState = ${snapshot.connectionState}');
+        print('DEBUG AuthWrapper: Is logged in = ${snapshot.data}');
+        
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
-        }          if (snapshot.data == true) {
+        }
+        
+        if (snapshot.data == true) {
+          print('DEBUG AuthWrapper: Navigating to WelcomeScreen (Dashboard)');
           return const WelcomeScreen();
         } else {
+          print('DEBUG AuthWrapper: Navigating to LoginScreen');
           return const LoginScreen();
         }
       },

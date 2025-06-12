@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import '../services/admin_events_service.dart';
 import '../models/admin_events.dart';
+import '../services/admin_events_service.dart';
 
 class AdminEventDetailScreen extends StatefulWidget {
-  final AdminEvent event;
+  final EventWithStatistics event;
 
   const AdminEventDetailScreen({
     super.key,
@@ -16,46 +16,45 @@ class AdminEventDetailScreen extends StatefulWidget {
 
 class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
   final AdminEventsService _eventsService = AdminEventsService();
-  
-  List<UserAttendanceDetail> _scannedUsers = [];
+  EventUsersResponse? _eventUsersResponse;
   bool _isLoading = true;
-  String? _errorMessage;
+  String? _error;
   String? _statusFilter;
+  int _currentPage = 1;
+  final int _usersPerPage = 50;
 
   @override
   void initState() {
     super.initState();
-    _loadScannedUsers();
+    _loadEventUsers();
   }
-  Future<void> _loadScannedUsers() async {
+
+  Future<void> _loadEventUsers({String? statusFilter, int page = 1}) async {
     try {
       setState(() {
         _isLoading = true;
-        _errorMessage = null;
+        _error = null;
       });
-      
+
       final response = await _eventsService.getEventUsers(
         widget.event.eventId,
-        statusFilter: _statusFilter,
-        page: 1,
-        limit: 1000,
+        statusFilter: statusFilter,
+        page: page,
+        limit: _usersPerPage,
       );
-      
-      // Filtra solo gli utenti che hanno scannerizzato (presente o assente)
-      final scannedUsers = response.users.where((user) => 
-        user.status == 'present' || user.status == 'absent'
-      ).toList();
-      
+
       if (mounted) {
         setState(() {
-          _scannedUsers = scannedUsers;
+          _eventUsersResponse = response;
+          _statusFilter = statusFilter;
+          _currentPage = page;
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
         setState(() {
-          _errorMessage = e.toString();
+          _error = e.toString();
           _isLoading = false;
         });
       }
@@ -67,7 +66,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF1A1A2E),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
@@ -77,7 +76,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
             SizedBox(width: 8),
             Text(
               'Delete Event',
-              style: TextStyle(color: Colors.black87),
+              style: TextStyle(color: Colors.white),
             ),
           ],
         ),
@@ -87,14 +86,15 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
           children: [
             const Text(
               'Are you sure you want to delete this event?',
-              style: TextStyle(color: Colors.black54),
+              style: TextStyle(color: Colors.grey),
             ),
             const SizedBox(height: 12),
             Container(
-              padding: const EdgeInsets.all(12),              decoration: BoxDecoration(
-                color: Colors.red.withValues(alpha: 0.1),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.red.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.red.withValues(alpha: 0.3)),
+                border: Border.all(color: Colors.red.withOpacity(0.3)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,17 +102,17 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                   Text(
                     'Event: ${widget.event.eventName}',
                     style: const TextStyle(
-                      color: Colors.black87,
+                      color: Colors.white,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                   Text(
                     'Date: ${widget.event.date}',
-                    style: const TextStyle(color: Colors.black54),
+                    style: const TextStyle(color: Colors.grey),
                   ),
                   Text(
-                    'Total Scanned Users: ${_scannedUsers.length}',
-                    style: const TextStyle(color: Colors.black54),
+                    'Total Users: ${_eventUsersResponse?.users.length ?? 0}',
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 ],
               ),
@@ -121,7 +121,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
             Text(
               'This action cannot be undone. All attendance data for this event will be permanently deleted.',
               style: TextStyle(
-                color: Colors.red[600],
+                color: Colors.red[400],
                 fontSize: 13,
                 fontStyle: FontStyle.italic,
               ),
@@ -151,7 +151,9 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
           ),
         ],
       ),
-    );    if (confirmed == true) {
+    );
+
+    if (confirmed == true) {
       try {
         // Show loading indicator
         if (mounted) {
@@ -159,7 +161,9 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
             context: context,
             barrierDismissible: false,
             builder: (context) => const Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667eea)),
+              ),
             ),
           );
         }
@@ -230,25 +234,43 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[100],
+      backgroundColor: const Color(0xFF0F0F23),
       appBar: AppBar(
-        title: Text(
-          widget.event.eventName,
-          style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
+        backgroundColor: const Color(0xFF1A1A2E),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              widget.event.eventName,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            Text(
+              widget.event.date,
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 14,
+              ),
+            ),
+          ],
         ),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,        elevation: 1,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadScannedUsers,
+            icon: const Icon(Icons.refresh, color: Colors.white),
+            onPressed: () => _loadEventUsers(statusFilter: _statusFilter, page: _currentPage),
+            tooltip: 'Refresh Data',
           ),
           IconButton(
-            icon: const Icon(Icons.delete),
+            icon: const Icon(Icons.delete, color: Colors.white),
             onPressed: _deleteEvent,
+            tooltip: 'Delete Event',
           ),
         ],
       ),
@@ -259,236 +281,85 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
   Widget _buildBody() {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(),
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667eea)),
+        ),
       );
     }
 
-    if (_errorMessage != null) {
-      return _buildErrorState();
+    if (_error != null) {
+      return _buildErrorWidget();
     }
 
-    if (_scannedUsers.isEmpty) {
-      return _buildEmptyState();
-    }
-
-    return Column(
-      children: [
-        _buildStatusFilter(),
-        _buildStats(),
-        Expanded(
-          child: _buildUsersList(),
-        ),
-      ],
-    );
-  }
-  Widget _buildStatusFilter() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          _buildFilterButton('All', null),
-          const SizedBox(width: 8),
-          _buildFilterButton('Present', 'present'),
-          const SizedBox(width: 8),
-          _buildFilterButton('Absent', 'absent'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterButton(String label, String? status) {
-    final isSelected = _statusFilter == status;
-    
-    return Expanded(
-      child: ElevatedButton(
-        onPressed: () {
-          setState(() {
-            _statusFilter = status;
-          });
-          _loadScannedUsers();
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: isSelected ? Colors.blue : Colors.grey[300],
-          foregroundColor: isSelected ? Colors.white : Colors.black87,
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(vertical: 12),
-        ),
-        child: Text(label),
-      ),
-    );
-  }
-
-  Widget _buildStats() {
-    final presentCount = _scannedUsers.where((u) => u.status == 'present').length;
-    final absentCount = _scannedUsers.where((u) => u.status == 'absent').length;
-    final totalScanned = _scannedUsers.length;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(children: [
-          Expanded(
-            child: _buildStatItem(
-              'Total Scans',
-              totalScanned.toString(),
-              Colors.blue,
-            ),
-          ),
-          Expanded(
-            child: _buildStatItem(
-              'Present',
-              presentCount.toString(),
-              Colors.green,
-            ),
-          ),
-          Expanded(
-            child: _buildStatItem(
-              'Absent',
-              absentCount.toString(),
-              Colors.red,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value, Color color) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: color,
-          ),
-        ),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
-
-  Widget _buildUsersList() {
-    final filteredUsers = _statusFilter == null 
-        ? _scannedUsers 
-        : _scannedUsers.where((u) => u.status == _statusFilter).toList();
-
-    return Container(
-      margin: const EdgeInsets.all(16),      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ListView.separated(
-        padding: const EdgeInsets.all(8),
-        itemCount: filteredUsers.length,
-        separatorBuilder: (context, index) => const Divider(height: 1),
-        itemBuilder: (context, index) {
-          final user = filteredUsers[index];
-          return _buildUserTile(user);
-        },
-      ),
-    );
-  }
-
-  Widget _buildUserTile(UserAttendanceDetail user) {
-    final isPresent = user.status == 'present';
-    
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      leading: CircleAvatar(
-        backgroundColor: isPresent ? Colors.green : Colors.red,
-        child: Icon(
-          isPresent ? Icons.check : Icons.close,
-          color: Colors.white,
-        ),
-      ),
-      title: Text(
-        user.fullName,
-        style: const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 16,
-        ),
-      ),      subtitle: user.timestamp != null
-          ? Text(
-              'Scanned: ${user.displayTimestamp}',
-              style: TextStyle(
-                color: Colors.grey[600],
-                fontSize: 12,
-              ),
-            )
-          : null,
-      trailing: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        decoration: BoxDecoration(
-          color: isPresent ? Colors.green : Colors.red,
-          borderRadius: BorderRadius.circular(12),
-        ),
+    if (_eventUsersResponse == null) {
+      return const Center(
         child: Text(
-          isPresent ? 'PRESENT' : 'ABSENT',
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 11,
-            fontWeight: FontWeight.bold,
-          ),
+          'No data available',
+          style: TextStyle(color: Colors.white),
         ),
-      ),
+      );
+    }
+
+    return Column(
+      children: [
+        // Event statistics header
+        _buildEventHeader(),
+        
+        // Filter and controls
+        _buildFilterControls(),
+        
+        // Users table
+        Expanded(child: _buildUsersTable()),
+        
+        // Pagination
+        _buildPagination(),
+      ],
     );
   }
 
-  Widget _buildErrorState() {
+  Widget _buildErrorWidget() {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(32),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.error_outline,
               size: 64,
-              color: Colors.red[300],
-            ),            const SizedBox(height: 16),
-            const Text(
-              'Loading Error',
+              color: Colors.red[400],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Error Loading Event Details',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
+                color: Colors.red[400],
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              _errorMessage!,
+              _error!,
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600]),
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[400],
+              ),
             ),
             const SizedBox(height: 24),
             ElevatedButton(
-              onPressed: _loadScannedUsers,
-              child: const Text('Retry'),
+              onPressed: () => _loadEventUsers(statusFilter: _statusFilter, page: _currentPage),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF667eea),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text(
+                'Retry',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ],
         ),
@@ -496,39 +367,631 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
     );
   }
 
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.qr_code_scanner,
-              size: 64,
-              color: Colors.grey[400],
-            ),            const SizedBox(height: 16),
-            const Text(
-              'No Scans Yet',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'No participants have scanned the QR code for this event yet',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey[600]),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _loadScannedUsers,
-              child: const Text('Refresh'),
-            ),
-          ],
+  Widget _buildEventHeader() {
+    final stats = _eventUsersResponse!.statistics;
+    
+    return Container(
+      margin: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF11998e), Color(0xFF38ef7d)],
         ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF11998e).withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Icon(
+                widget.event.isActive ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                color: Colors.white,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Event Statistics',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Text(
+                  widget.event.isActive ? 'ACTIVE' : 'INACTIVE',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildHeaderStatItem(
+                  'Total Users',
+                  stats.totalUsers.toString(),
+                  Icons.people,
+                ),
+              ),
+              Expanded(
+                child: _buildHeaderStatItem(
+                  'Present',
+                  stats.presentCount.toString(),
+                  Icons.check_circle,
+                ),
+              ),
+              Expanded(
+                child: _buildHeaderStatItem(
+                  'Attendance Rate',
+                  '${stats.attendanceRate.toStringAsFixed(1)}%',
+                  Icons.trending_up,
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildHeaderStatItem(String label, String value, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: Colors.white, size: 20),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.white.withOpacity(0.8),
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterControls() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Filter by Status',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildFilterChip('All', null),
+              _buildFilterChip('Present', 'present'),
+              _buildFilterChip('Hospital', 'hospital'),
+              _buildFilterChip('Family', 'family'),
+              _buildFilterChip('Emergency', 'emergency'),
+              _buildFilterChip('Vacancy', 'vacancy'),
+              _buildFilterChip('Personal', 'personal'),
+              _buildFilterChip('Not Registered', 'not_registered'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFilterChip(String label, String? value) {
+    final isSelected = _statusFilter == value;
+    
+    return FilterChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          color: isSelected ? Colors.white : Colors.grey[400],
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
+      selected: isSelected,
+      onSelected: (selected) {
+        _loadEventUsers(statusFilter: selected ? value : null, page: 1);
+      },
+      backgroundColor: const Color(0xFF0F0F23),
+      selectedColor: const Color(0xFF667eea),
+      checkmarkColor: Colors.white,
+      side: BorderSide(
+        color: isSelected ? const Color(0xFF667eea) : Colors.grey.withOpacity(0.3),
+      ),
+    );
+  }
+
+  Widget _buildUsersTable() {
+    final users = _eventUsersResponse!.users;
+    
+    if (users.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.people_outline,
+                size: 64,
+                color: Colors.grey[400],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'No Users Found',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[400],
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                _statusFilter != null 
+                    ? 'No users found with the selected status filter.'
+                    : 'No users registered for this event.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey[500],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      margin: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          // Table header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: const BoxDecoration(
+              color: Color(0xFF16213E),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(12),
+                topRight: Radius.circular(12),
+              ),
+            ),
+            child: const Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Name',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Surname',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Status',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Scan Time',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 1,
+                  child: Text(
+                    'Actions',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          // Table rows
+          Expanded(
+            child: ListView.builder(
+              itemCount: users.length,
+              itemBuilder: (context, index) {
+                return _buildUserRow(users[index]);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildUserRow(UserAttendanceDetail user) {
+    final statusColor = _getStatusColor(user.status);
+    final statusIcon = _getStatusIcon(user.status);
+    final timestampText = user.timestamp != null 
+        ? _formatTimestamp(user.timestamp!)
+        : '-';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        border: Border(
+          bottom: BorderSide(
+            color: Colors.grey.withOpacity(0.1),
+            width: 1,
+          ),
+        ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
+              user.name,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              user.surname,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Row(
+              children: [
+                Icon(statusIcon, color: statusColor, size: 16),
+                const SizedBox(width: 8),
+                Text(
+                  _getStatusLabel(user.status),
+                  style: TextStyle(
+                    color: statusColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              timestampText,
+              style: TextStyle(
+                color: Colors.grey[400],
+                fontSize: 12,
+              ),
+            ),
+          ),
+          Expanded(
+            flex: 1,
+            child: IconButton(
+              icon: Icon(Icons.edit, color: Colors.grey[400], size: 18),
+              onPressed: () => _showUpdateStatusDialog(user),
+              tooltip: 'Update Status',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPagination() {
+    final pagination = _eventUsersResponse?.pagination;
+    
+    // Return empty widget if pagination is null or only one page
+    if (pagination == null || pagination.totalPages <= 1) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            'Page ${pagination.currentPage} of ${pagination.totalPages}',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[400],
+            ),
+          ),
+          Row(
+            children: [
+              IconButton(
+                onPressed: pagination.currentPage > 1 
+                    ? () => _loadEventUsers(statusFilter: _statusFilter, page: _currentPage - 1)
+                    : null,
+                icon: const Icon(Icons.chevron_left),
+                color: Colors.white,
+              ),
+              IconButton(
+                onPressed: pagination.currentPage < pagination.totalPages 
+                    ? () => _loadEventUsers(statusFilter: _statusFilter, page: _currentPage + 1)
+                    : null,
+                icon: const Icon(Icons.chevron_right),
+                color: Colors.white,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showUpdateStatusDialog(UserAttendanceDetail user) {
+    String selectedStatus = user.status;
+    final motivationController = TextEditingController(text: user.motivazione ?? '');
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              backgroundColor: const Color(0xFF1A1A2E),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              title: Text(
+                'Update Status for ${user.name} ${user.surname}',
+                style: const TextStyle(color: Colors.white),
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  DropdownButtonFormField<String>(
+                    value: selectedStatus,
+                    dropdownColor: const Color(0xFF1A1A2E),
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Status',
+                      labelStyle: TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(),
+                    ),
+                    items: [
+                      'present', 'hospital', 'family', 'emergency', 
+                      'vacancy', 'personal', 'not_registered'
+                    ].map((status) => DropdownMenuItem(
+                      value: status,
+                      child: Text(_getStatusLabel(status)),
+                    )).toList(),
+                    onChanged: (value) {
+                      setState(() {
+                        selectedStatus = value!;
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: motivationController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      labelText: 'Motivation (optional)',
+                      labelStyle: TextStyle(color: Colors.grey),
+                      border: OutlineInputBorder(),
+                    ),
+                    maxLines: 3,
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton(
+                  onPressed: () => _updateUserStatus(user, selectedStatus, motivationController.text),
+                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF667eea)),
+                  child: const Text('Update', style: TextStyle(color: Colors.white)),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> _updateUserStatus(UserAttendanceDetail user, String status, String motivation) async {
+    try {
+      Navigator.of(context).pop(); // Close dialog
+      
+      // Show loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(
+            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667eea)),
+          ),
+        ),
+      );
+
+      await _eventsService.updateUserStatus(
+        widget.event.eventId,
+        user.userId,
+        status,
+        motivation: motivation.isNotEmpty ? motivation : null,
+      );
+
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+
+      // Refresh data
+      await _loadEventUsers(statusFilter: _statusFilter, page: _currentPage);
+
+      // Show success message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Status updated successfully for ${user.name} ${user.surname}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog
+      if (mounted) Navigator.of(context).pop();
+      
+      // Show error message
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating status: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'present':
+        return Colors.green;
+      case 'hospital':
+        return Colors.red;
+      case 'family':
+        return Colors.purple;
+      case 'emergency':
+        return Colors.orange;
+      case 'vacancy':
+        return Colors.blue;
+      case 'personal':
+        return Colors.cyan;
+      case 'not_registered':
+        return Colors.grey;
+      default:
+        return Colors.grey;
+    }
+  }
+
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case 'present':
+        return Icons.check_circle;
+      case 'hospital':
+        return Icons.local_hospital;
+      case 'family':
+        return Icons.family_restroom;
+      case 'emergency':
+        return Icons.emergency;
+      case 'vacancy':
+        return Icons.beach_access;
+      case 'personal':
+        return Icons.person;
+      case 'not_registered':
+        return Icons.pending;
+      default:
+        return Icons.help;
+    }
+  }
+
+  String _getStatusLabel(String status) {
+    switch (status) {
+      case 'present':
+        return 'Present';
+      case 'hospital':
+        return 'Hospital';
+      case 'family':
+        return 'Family';
+      case 'emergency':
+        return 'Emergency';
+      case 'vacancy':
+        return 'Vacancy';
+      case 'personal':
+        return 'Personal';
+      case 'not_registered':
+        return 'Not Registered';
+      default:
+        return status.toUpperCase();
+    }
+  }
+
+  String _formatTimestamp(DateTime timestamp) {
+    return '${timestamp.day.toString().padLeft(2, '0')}/${timestamp.month.toString().padLeft(2, '0')} ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
   }
 }

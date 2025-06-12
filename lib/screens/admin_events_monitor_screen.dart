@@ -262,9 +262,7 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
       ],
     );
   }
-
   Widget _buildEventCard(EventWithStatistics event) {
-    final attendanceRate = event.statistics.attendanceRate;
     final isActive = event.isActive;
 
     return Container(
@@ -343,18 +341,9 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
             ),
             
             const SizedBox(height: 16),
-            
-            // Statistics row
+              // Statistics row
             Row(
               children: [
-                Expanded(
-                  child: _buildEventStatItem(
-                    'Total Users',
-                    event.statistics.totalUsers.toString(),
-                    Icons.people,
-                    Colors.blue,
-                  ),
-                ),
                 Expanded(
                   child: _buildEventStatItem(
                     'Present',
@@ -365,11 +354,10 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
                 ),
                 Expanded(
                   child: _buildEventStatItem(
-                    'Rate',
-                    '${attendanceRate.toStringAsFixed(1)}%',
-                    Icons.trending_up,
-                    attendanceRate >= 80 ? Colors.green : 
-                    attendanceRate >= 60 ? Colors.orange : Colors.red,
+                    'Absent',
+                    event.statistics.absentCount.toString(),
+                    Icons.cancel,
+                    Colors.red,
                   ),
                 ),
               ],
