@@ -360,14 +360,9 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
                     Colors.red,
                   ),
                 ),
-              ],
-            ),
+              ],            ),
             
             const SizedBox(height: 16),
-            
-            // Status breakdown
-            _buildStatusBreakdown(event.statistics.statusBreakdown),
-              const SizedBox(height: 16),
             
             // Action buttons row
             Row(
@@ -457,73 +452,6 @@ class _AdminEventsMonitorScreenState extends State<AdminEventsMonitorScreen> {
       ),
     );
   }
-
-  Widget _buildStatusBreakdown(Map<String, int> statusBreakdown) {
-    final statusIcons = {
-      'present': {'icon': Icons.check_circle, 'color': Colors.green, 'label': 'Present'},
-      'hospital': {'icon': Icons.local_hospital, 'color': Colors.red, 'label': 'Hospital'},
-      'family': {'icon': Icons.family_restroom, 'color': Colors.purple, 'label': 'Family'},
-      'emergency': {'icon': Icons.emergency, 'color': Colors.orange, 'label': 'Emergency'},
-      'vacancy': {'icon': Icons.beach_access, 'color': Colors.blue, 'label': 'Vacancy'},
-      'personal': {'icon': Icons.person, 'color': Colors.cyan, 'label': 'Personal'},
-      'not_registered': {'icon': Icons.pending, 'color': Colors.grey, 'label': 'Not Registered'},
-    };
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Status Breakdown',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: Colors.grey[300],
-          ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: statusBreakdown.entries
-              .where((entry) => entry.value > 0)
-              .map((entry) {
-            final statusInfo = statusIcons[entry.key];
-            if (statusInfo == null) return const SizedBox.shrink();
-            
-            return Container(              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: (statusInfo['color'] as Color).withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: (statusInfo['color'] as Color).withValues(alpha: 0.3),
-                ),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    statusInfo['icon'] as IconData,
-                    size: 14,
-                    color: statusInfo['color'] as Color,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${entry.value}',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: statusInfo['color'] as Color,
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-      ],
-    );
-  }
-
   void _navigateToEventDetails(EventWithStatistics event) {
     Navigator.push(
       context,

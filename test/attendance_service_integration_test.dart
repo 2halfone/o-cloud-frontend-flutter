@@ -38,7 +38,7 @@ void main() {
         expect(result, isNull);
       });
     });    group('Status Helper Methods', () {
-      test('should return correct status labels', () {
+      test('should return correct status labels (legacy support)', () {
         expect(attendanceService.getStatusLabel(AttendanceStatus.present), equals('Present'));
         expect(attendanceService.getStatusLabel(AttendanceStatus.hospital), equals('Hospital'));
         expect(attendanceService.getStatusLabel(AttendanceStatus.family), equals('Family Reasons'));
@@ -46,7 +46,9 @@ void main() {
         expect(attendanceService.getStatusLabel(AttendanceStatus.vacancy), equals('Vacancy'));
         expect(attendanceService.getStatusLabel(AttendanceStatus.personal), equals('Personal Reasons'));
         expect(attendanceService.getStatusLabel(AttendanceStatus.notRegistered), equals('Not Registered'));
-      });      test('getAvailableStatuses should return correct statuses', () {
+      });
+
+      test('getAvailableStatuses should return correct statuses (legacy support)', () {
         final statuses = attendanceService.getAvailableStatuses();
         
         expect(statuses, hasLength(5)); // Changed from 6 to 5
@@ -59,7 +61,9 @@ void main() {
         // Should NOT contain these statuses
         expect(statuses, isNot(contains(AttendanceStatus.personal)));
         expect(statuses, isNot(contains(AttendanceStatus.notRegistered)));
-      });      test('should correctly identify which statuses require motivation', () {
+      });
+
+      test('should correctly identify which statuses require motivation (legacy support)', () {
         expect(attendanceService.requiresMotivation(AttendanceStatus.present), isFalse);
         expect(attendanceService.requiresMotivation(AttendanceStatus.hospital), isFalse);
         expect(attendanceService.requiresMotivation(AttendanceStatus.family), isFalse); // No longer requires motivation
@@ -68,9 +72,8 @@ void main() {
         expect(attendanceService.requiresMotivation(AttendanceStatus.personal), isFalse);
         expect(attendanceService.requiresMotivation(AttendanceStatus.notRegistered), isFalse);
       });
-    });
-
-    group('API Request Structure', () {      test('should create valid attendance request for present status', () {
+    });    group('NEW API Request Structure (Automatic Attendance)', () {
+      test('should create valid attendance request without status (automatic present)', () {
         final qrContent = QRContent(
           jwt: 'sample_jwt_token',
           type: 'attendance',
@@ -79,16 +82,17 @@ void main() {
 
         final request = AttendanceRequest(
           qrContent: qrContent,
-          status: AttendanceStatus.present,
           reason: null,
         );
 
         final json = request.toJson();
 
         expect(json['qr_content'], isNotNull);
-        expect(json['status'], equals('present'));
+        expect(json.containsKey('status'), false); // Status not in request
         expect(json['reason'], isNull);
-      });      test('should create valid attendance request for emergency with motivation', () {
+      });
+
+      test('should create valid attendance request with reason (automatic present)', () {
         final qrContent = QRContent(
           jwt: 'sample_jwt_token',
           type: 'attendance',
@@ -97,17 +101,16 @@ void main() {
 
         final request = AttendanceRequest(
           qrContent: qrContent,
-          status: AttendanceStatus.emergency,
-          reason: 'Family emergency situation',
+          reason: 'Late arrival but present',
         );
 
         final json = request.toJson();
 
         expect(json['qr_content'], isNotNull);
-        expect(json['status'], equals('emergency'));
-        expect(json['reason'], equals('Family emergency situation'));
+        expect(json.containsKey('status'), false); // Status not in request
+        expect(json['reason'], equals('Late arrival but present'));
       });
-    });    group('Backend Connectivity', () {
+    });group('Backend Connectivity', () {
       test('should handle API connectivity check with detailed logging', () async {
         debugPrint('🔧 Starting backend connectivity test...');
         debugPrint('📍 Configured base URL: ${ApiConstants.baseUrl}');

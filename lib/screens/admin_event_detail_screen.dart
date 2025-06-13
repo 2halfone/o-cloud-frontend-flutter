@@ -14,12 +14,10 @@ class AdminEventDetailScreen extends StatefulWidget {
   State<AdminEventDetailScreen> createState() => _AdminEventDetailScreenState();
 }
 
-class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
-  final AdminEventsService _eventsService = AdminEventsService();
+class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {  final AdminEventsService _eventsService = AdminEventsService();
   EventUsersResponse? _eventUsersResponse;
   bool _isLoading = true;
   String? _error;
-  String? _statusFilter;
   int _currentPage = 1;
   final int _usersPerPage = 50;
 
@@ -28,8 +26,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
     super.initState();
     _loadEventUsers();
   }
-
-  Future<void> _loadEventUsers({String? statusFilter, int page = 1}) async {
+  Future<void> _loadEventUsers({int page = 1}) async {
     try {
       setState(() {
         _isLoading = true;
@@ -38,7 +35,6 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
 
       final response = await _eventsService.getEventUsers(
         widget.event.eventId,
-        statusFilter: statusFilter,
         page: page,
         limit: _usersPerPage,
       );
@@ -46,7 +42,6 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
       if (mounted) {
         setState(() {
           _eventUsersResponse = response;
-          _statusFilter = statusFilter;
           _currentPage = page;
           _isLoading = false;
         });
@@ -261,10 +256,9 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          IconButton(
+        actions: [          IconButton(
             icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: () => _loadEventUsers(statusFilter: _statusFilter, page: _currentPage),
+            onPressed: () => _loadEventUsers(page: _currentPage),
             tooltip: 'Refresh Data',
           ),
           IconButton(
@@ -298,15 +292,10 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
           style: TextStyle(color: Colors.white),
         ),
       );
-    }
-
-    return Column(
+    }    return Column(
       children: [
         // Event statistics header
         _buildEventHeader(),
-        
-        // Filter and controls
-        _buildFilterControls(),
         
         // Users table
         Expanded(child: _buildUsersTable()),
@@ -347,9 +336,8 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                 color: Colors.grey[400],
               ),
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () => _loadEventUsers(statusFilter: _statusFilter, page: _currentPage),
+            const SizedBox(height: 24),            ElevatedButton(
+              onPressed: () => _loadEventUsers(page: _currentPage),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF667eea),
                 shape: RoundedRectangleBorder(
@@ -488,70 +476,6 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
       ),
     );
   }
-
-  Widget _buildFilterControls() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A2E),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Filter by Status',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: [
-              _buildFilterChip('All', null),
-              _buildFilterChip('Present', 'present'),
-              _buildFilterChip('Hospital', 'hospital'),
-              _buildFilterChip('Family', 'family'),
-              _buildFilterChip('Emergency', 'emergency'),
-              _buildFilterChip('Vacancy', 'vacancy'),
-              _buildFilterChip('Personal', 'personal'),
-              _buildFilterChip('Not Registered', 'not_registered'),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, String? value) {
-    final isSelected = _statusFilter == value;
-    
-    return FilterChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.white : Colors.grey[400],
-          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-      selected: isSelected,
-      onSelected: (selected) {
-        _loadEventUsers(statusFilter: selected ? value : null, page: 1);
-      },
-      backgroundColor: const Color(0xFF0F0F23),
-      selectedColor: const Color(0xFF667eea),
-      checkmarkColor: Colors.white,
-      side: BorderSide(
-        color: isSelected ? const Color(0xFF667eea) : Colors.grey.withOpacity(0.3),
-      ),
-    );
-  }
-
   Widget _buildUsersTable() {
     final users = _eventUsersResponse!.users;
     
@@ -576,11 +500,8 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                   color: Colors.grey[400],
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                _statusFilter != null 
-                    ? 'No users found with the selected status filter.'
-                    : 'No users registered for this event.',
+              const SizedBox(height: 8),              Text(
+                'No users registered for this event.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -610,8 +531,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                 topLeft: Radius.circular(12),
                 topRight: Radius.circular(12),
               ),
-            ),
-            child: const Row(
+            ),            child: const Row(
               children: [
                 Expanded(
                   flex: 2,
@@ -636,27 +556,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
                 Expanded(
                   flex: 2,
                   child: Text(
-                    'Status',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 2,
-                  child: Text(
                     'Scan Time',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  flex: 1,
-                  child: Text(
-                    'Actions',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -680,10 +580,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
       ),
     );
   }
-
   Widget _buildUserRow(UserAttendanceDetail user) {
-    final statusColor = _getStatusColor(user.status);
-    final statusIcon = _getStatusIcon(user.status);
     final timestampText = user.timestamp != null 
         ? _formatTimestamp(user.timestamp!)
         : '-';
@@ -698,8 +595,7 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
           ),
         ),
       ),
-      child: Row(
-        children: [
+      child: Row(children: [
           Expanded(
             flex: 2,
             child: Text(
@@ -722,37 +618,12 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
           ),
           Expanded(
             flex: 2,
-            child: Row(
-              children: [
-                Icon(statusIcon, color: statusColor, size: 16),
-                const SizedBox(width: 8),
-                Text(
-                  _getStatusLabel(user.status),
-                  style: TextStyle(
-                    color: statusColor,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Expanded(
-            flex: 2,
             child: Text(
               timestampText,
               style: TextStyle(
                 color: Colors.grey[400],
                 fontSize: 12,
               ),
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: IconButton(
-              icon: Icon(Icons.edit, color: Colors.grey[400], size: 18),
-              onPressed: () => _showUpdateStatusDialog(user),
-              tooltip: 'Update Status',
             ),
           ),
         ],
@@ -781,17 +652,16 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
             ),
           ),
           Row(
-            children: [
-              IconButton(
+            children: [              IconButton(
                 onPressed: pagination.currentPage > 1 
-                    ? () => _loadEventUsers(statusFilter: _statusFilter, page: _currentPage - 1)
+                    ? () => _loadEventUsers(page: _currentPage - 1)
                     : null,
                 icon: const Icon(Icons.chevron_left),
                 color: Colors.white,
               ),
               IconButton(
                 onPressed: pagination.currentPage < pagination.totalPages 
-                    ? () => _loadEventUsers(statusFilter: _statusFilter, page: _currentPage + 1)
+                    ? () => _loadEventUsers(page: _currentPage + 1)
                     : null,
                 icon: const Icon(Icons.chevron_right),
                 color: Colors.white,
@@ -802,195 +672,6 @@ class _AdminEventDetailScreenState extends State<AdminEventDetailScreen> {
       ),
     );
   }
-
-  void _showUpdateStatusDialog(UserAttendanceDetail user) {
-    String selectedStatus = user.status;
-    final motivationController = TextEditingController(text: user.motivazione ?? '');
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: const Color(0xFF1A1A2E),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-              title: Text(
-                'Update Status for ${user.name} ${user.surname}',
-                style: const TextStyle(color: Colors.white),
-              ),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  DropdownButtonFormField<String>(
-                    value: selectedStatus,
-                    dropdownColor: const Color(0xFF1A1A2E),
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                      labelText: 'Status',
-                      labelStyle: TextStyle(color: Colors.grey),
-                      border: OutlineInputBorder(),
-                    ),
-                    items: [
-                      'present', 'hospital', 'family', 'emergency', 
-                      'vacancy', 'personal', 'not_registered'
-                    ].map((status) => DropdownMenuItem(
-                      value: status,
-                      child: Text(_getStatusLabel(status)),
-                    )).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        selectedStatus = value!;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: motivationController,
-                    style: const TextStyle(color: Colors.white),
-                    decoration: const InputDecoration(
-                      labelText: 'Motivation (optional)',
-                      labelStyle: TextStyle(color: Colors.grey),
-                      border: OutlineInputBorder(),
-                    ),
-                    maxLines: 3,
-                  ),
-                ],
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-                ),
-                ElevatedButton(
-                  onPressed: () => _updateUserStatus(user, selectedStatus, motivationController.text),
-                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF667eea)),
-                  child: const Text('Update', style: TextStyle(color: Colors.white)),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Future<void> _updateUserStatus(UserAttendanceDetail user, String status, String motivation) async {
-    try {
-      Navigator.of(context).pop(); // Close dialog
-      
-      // Show loading
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667eea)),
-          ),
-        ),
-      );
-
-      await _eventsService.updateUserStatus(
-        widget.event.eventId,
-        user.userId,
-        status,
-        motivation: motivation.isNotEmpty ? motivation : null,
-      );
-
-      // Close loading dialog
-      if (mounted) Navigator.of(context).pop();
-
-      // Refresh data
-      await _loadEventUsers(statusFilter: _statusFilter, page: _currentPage);
-
-      // Show success message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Status updated successfully for ${user.name} ${user.surname}'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      // Close loading dialog
-      if (mounted) Navigator.of(context).pop();
-      
-      // Show error message
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error updating status: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'present':
-        return Colors.green;
-      case 'hospital':
-        return Colors.red;
-      case 'family':
-        return Colors.purple;
-      case 'emergency':
-        return Colors.orange;
-      case 'vacancy':
-        return Colors.blue;
-      case 'personal':
-        return Colors.cyan;
-      case 'not_registered':
-        return Colors.grey;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  IconData _getStatusIcon(String status) {
-    switch (status) {
-      case 'present':
-        return Icons.check_circle;
-      case 'hospital':
-        return Icons.local_hospital;
-      case 'family':
-        return Icons.family_restroom;
-      case 'emergency':
-        return Icons.emergency;
-      case 'vacancy':
-        return Icons.beach_access;
-      case 'personal':
-        return Icons.person;
-      case 'not_registered':
-        return Icons.pending;
-      default:
-        return Icons.help;
-    }
-  }
-
-  String _getStatusLabel(String status) {
-    switch (status) {
-      case 'present':
-        return 'Present';
-      case 'hospital':
-        return 'Hospital';
-      case 'family':
-        return 'Family';
-      case 'emergency':
-        return 'Emergency';
-      case 'vacancy':
-        return 'Vacancy';
-      case 'personal':
-        return 'Personal';
-      case 'not_registered':
-        return 'Not Registered';
-      default:
-        return status.toUpperCase();
-    }
-  }
-
   String _formatTimestamp(DateTime timestamp) {
     return '${timestamp.day.toString().padLeft(2, '0')}/${timestamp.month.toString().padLeft(2, '0')} ${timestamp.hour.toString().padLeft(2, '0')}:${timestamp.minute.toString().padLeft(2, '0')}';
   }

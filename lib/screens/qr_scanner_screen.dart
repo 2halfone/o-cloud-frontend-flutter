@@ -4,8 +4,8 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:qr_code_tools/qr_code_tools.dart';
 import 'dart:io';
+import 'dart:async';
 import '../widgets/qr_scanner/qr_camera_widget.dart';
-import '../widgets/qr_scanner/attendance_form.dart';
 import '../services/attendance_service.dart';
 import '../models/attendance.dart';
 
@@ -17,11 +17,9 @@ class QRScannerScreen extends StatefulWidget {
 }
 
 class _QRScannerScreenState extends State<QRScannerScreen>
-    with TickerProviderStateMixin {
-  bool _hasPermission = false;
+    with TickerProviderStateMixin {  bool _hasPermission = false;
   bool _isFlashOn = false;
   String? _scannedData;
-  bool _showAttendanceForm = false;
   
   late AnimationController _fadeController;
   late AnimationController _slideController;
@@ -80,14 +78,74 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         _hasPermission = result.isGranted;
       });
     }
-  }
-  void _onQRScanned(String data) async {
+  }  void _onQRScanned(String data) async {
     setState(() {
       _scannedData = data;
     });
     
-    // Check if user already has attendance for today
-    await _checkTodayAttendanceBeforeShowingForm();
+    // NEW: Direct attendance registration without status selection
+    await _handleDirectAttendanceRegistration();
+  }
+
+  Future<void> _handleDirectAttendanceRegistration() async {
+    try {
+      // Show loading indicator
+      if (mounted) {
+        showDialog(
+          context: context,
+          barrierDismissible: false,
+          builder: (context) => const Center(
+            child: CircularProgressIndicator(color: Colors.white),
+          ),
+        );
+      }
+
+      final attendanceService = AttendanceService();
+      
+      // Parse QR content
+      final qrContent = attendanceService.parseQRContent(_scannedData!);
+      if (qrContent == null) {
+        throw Exception('Invalid QR code format');
+      }
+
+      // Create request without status (automatic "present")
+      final request = AttendanceRequest(
+        qrContent: qrContent,
+        reason: null, // No reason needed for automatic presence
+      );
+
+      // Submit attendance directly
+      final response = await attendanceService.submitAttendance(request);
+
+      // Hide loading indicator
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Show success dialog with automatic registration message
+      if (mounted) {
+        _showAutomaticAttendanceSuccessDialog(response);
+      }
+
+    } catch (e) {
+      // Hide loading indicator if still showing
+      if (mounted) {
+        Navigator.of(context).pop();
+      }
+
+      // Check if it's a duplicate attendance error
+      if (e.toString().contains('already registered') || 
+          e.toString().contains('already exists') ||
+          e.toString().contains('duplicate')) {
+        // If already registered, check today's attendance and show info
+        await _checkTodayAttendanceBeforeShowingForm();
+      } else {
+        // Show error message
+        if (mounted) {
+          _showErrorSnackBar('Failed to register attendance: $e');
+        }
+      }
+    }
   }
 
   Future<void> _checkTodayAttendanceBeforeShowingForm() async {
@@ -115,14 +173,10 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         // User already has attendance for today - show informational dialog
         if (mounted) {
           _showAttendanceAlreadyRegisteredDialog(todayAttendanceResponse);
-        }
-      } else {
-        // No attendance yet - show attendance form
-        if (mounted) {
-          setState(() {
-            _showAttendanceForm = true;
-          });
-        }
+        }      } else {
+        // No attendance yet - this should not happen with direct registration
+        // Log for debugging purposes
+        debugPrint('No existing attendance found, but this should have been handled by direct registration');
       }
     } catch (e) {
       // Hide loading indicator if still showing
@@ -131,14 +185,10 @@ class _QRScannerScreenState extends State<QRScannerScreen>
       }
 
       // If there's an error checking today's attendance, still allow them to try submitting
-      // This ensures the app doesn't break if the check fails
-      debugPrint('Error checking today\'s attendance: $e');
+      // This ensures the app doesn't break if the check fails      debugPrint('Error checking today\'s attendance: $e');
       
+      // Note: With direct registration, this error handling is mainly for edge cases
       if (mounted) {
-        setState(() {
-          _showAttendanceForm = true;
-        });
-          // Optionally show a warning that we couldn't check today's attendance
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Could not verify today\'s attendance status: $e'),
@@ -148,122 +198,61 @@ class _QRScannerScreenState extends State<QRScannerScreen>
         );
       }
     }
+  }  void _showAutomaticAttendanceSuccessDialog(AttendanceResponse response) {
+    _showValidationScreen(true);
   }
+
   void _showAttendanceAlreadyRegisteredDialog(TodayAttendanceResponse todayResponse) {
-    final attendance = todayResponse.attendance;
-    final statusText = attendance?.status.toString().split('.').last ?? 'unknown';
-    final timeText = attendance?.timestamp != null 
-        ? _formatTime(attendance!.timestamp.toString())
-        : 'unknown time';
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: Colors.grey[900],
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: Row(
-          children: [
-            Icon(Icons.info_outline, color: Colors.blue[400]),
-            const SizedBox(width: 8),
-            const Text(
-              'Attendance Already Registered',
-              style: TextStyle(color: Colors.white, fontSize: 18),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'You have already registered your attendance for today.',
-              style: TextStyle(color: Colors.grey[300], fontSize: 16),
-            ),
-            if (attendance != null) ...[
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey[800],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Status: ${statusText.toUpperCase()}',
-                      style: TextStyle(
-                        color: _getStatusColor(statusText),
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Time: $timeText',
-                      style: TextStyle(color: Colors.grey[400]),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Event: ${attendance.eventName}',
-                      style: TextStyle(color: Colors.grey[400]),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text(
-              'OK',
-              style: TextStyle(color: Colors.blue[400]),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatTime(String timestamp) {
+    _showValidationScreen(false);
+  }  void _showValidationScreen(bool isSuccess) {
+    debugPrint('🔊 _showValidationScreen called with isSuccess: $isSuccess');
+      // 🔊 Play system sound for feedback
     try {
-      final dateTime = DateTime.parse(timestamp);
-      final hour = dateTime.hour.toString().padLeft(2, '0');
-      final minute = dateTime.minute.toString().padLeft(2, '0');
-      return '$hour:$minute';
+      if (isSuccess) {
+        debugPrint('🎵 Playing success sound...');
+        SystemSound.play(SystemSoundType.click); // Success sound
+        HapticFeedback.lightImpact(); // Light vibration for success
+        // Try alternative success sound
+        Future.delayed(const Duration(milliseconds: 100), () {
+          HapticFeedback.selectionClick();
+        });
+        debugPrint('✅ Success sound and vibration triggered');
+      } else {
+        debugPrint('🎵 Playing error sound...');
+        SystemSound.play(SystemSoundType.alert); // Error sound
+        HapticFeedback.mediumImpact(); // Medium vibration for error
+        // Try stronger vibration for error
+        Future.delayed(const Duration(milliseconds: 100), () {
+          HapticFeedback.heavyImpact();
+        });
+        debugPrint('❌ Error sound and vibration triggered');
+      }
     } catch (e) {
-      return timestamp;
+      debugPrint('⚠️ Error playing sound/vibration: $e');
     }
-  }
-  Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'present':
-        return Colors.green;
-      case 'absent':
-        return Colors.red;
-      case 'late':
-        return Colors.orange;
-      default:
-        return Colors.grey;
-    }
-  }
-  void _onFlashToggle() {
-    debugPrint('Flash toggle called - current state: $_isFlashOn');
-    setState(() {
-      _isFlashOn = !_isFlashOn;
-    });
-    debugPrint('Flash toggle completed - new state: $_isFlashOn');
     
-    // Show feedback to user
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(_isFlashOn ? 'Flash turned ON' : 'Flash turned OFF'),
-        duration: const Duration(seconds: 1),
-        backgroundColor: _isFlashOn ? Colors.yellow[700] : Colors.grey[700],
+    // Navigate to full-screen validation
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => _ValidationScreen(
+          isSuccess: isSuccess,
+          onComplete: () {
+            Navigator.of(context).pop(); // Close validation screen
+            Navigator.of(context).pop(); // Go back to home
+          },
+        ),
+        transitionDuration: const Duration(milliseconds: 300),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(opacity: animation, child: child);
+        },
       ),
     );
-  }  Future<void> _pickImageFromGallery() async {
+  }
+
+  void _showErrorSnackBar(String message) {
+    _showValidationScreen(false);
+  }
+  Future<void> _pickImageFromGallery() async {
     debugPrint('Gallery function called');
     if (!mounted) {
       debugPrint('Widget not mounted, returning');
@@ -362,19 +351,7 @@ class _QRScannerScreenState extends State<QRScannerScreen>
       if (mounted) {
         _showErrorSnackBar('Error during image selection: $e');
       }
-    }
-  }
-
-  void _onAttendanceSubmitSuccess() {
-    Navigator.pop(context);
-  }
-
-  void _onAttendanceCancel() {
-    setState(() {
-      _showAttendanceForm = false;
-      _scannedData = null;
-    });
-  }
+    }  }
 
   void _showPermissionSettingsDialog() {
     showDialog(
@@ -432,25 +409,14 @@ class _QRScannerScreenState extends State<QRScannerScreen>
               ),
             ),
           ],
-        );
-      },
+        );    },
     );
   }
 
-  void _showErrorSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(child: Text(message)),
-          ],
-        ),
-        backgroundColor: Colors.red,
-        behavior: SnackBarBehavior.floating,
-      ),
-    );
+  void _onFlashToggle() {
+    setState(() {
+      _isFlashOn = !_isFlashOn;
+    });
   }
 
   @override
@@ -477,23 +443,10 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                       child: _hasPermission
                           ? _buildScannerContent()
                           : _buildPermissionError(),
-                    ),
-                    _buildBottomControls(),
+                    ),                    _buildBottomControls(),
                   ],
                 ),                
-                // Attendance Form Overlay
-                if (_showAttendanceForm && _scannedData != null)
-                  Positioned.fill(
-                    child: Material(
-                      color: Colors.black.withValues(alpha: 0.8),
-                      child: Center(
-                        child: AttendanceForm(
-                          qrData: _scannedData!,
-                          onSubmitSuccess: _onAttendanceSubmitSuccess,
-                          onCancel: _onAttendanceCancel,
-                        ),
-                      ),
-                    ),                  ),
+                // NOTE: AttendanceForm overlay removed - now using direct attendance registration
               ],
             ),
           ),
@@ -700,15 +653,13 @@ class _QRScannerScreenState extends State<QRScannerScreen>
                     _pickImageFromGallery();
                   },
                   color: const Color(0xFF4facfe),
-                ),
-                _buildControlButton(
+                ),                _buildControlButton(
                   icon: Icons.refresh,
                   label: 'Reset',
                   onPressed: () {
                     debugPrint('Reset button pressed'); // Debug log
                     setState(() {
                       _scannedData = null;
-                      _showAttendanceForm = false;
                     });
                   },
                   color: const Color(0xFF667eea),
@@ -813,6 +764,124 @@ class _QRScannerScreenState extends State<QRScannerScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+// Validation Screen Widget
+class _ValidationScreen extends StatefulWidget {
+  final bool isSuccess;
+  final VoidCallback onComplete;
+
+  const _ValidationScreen({
+    required this.isSuccess,
+    required this.onComplete,
+  });
+
+  @override
+  State<_ValidationScreen> createState() => _ValidationScreenState();
+}
+
+class _ValidationScreenState extends State<_ValidationScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _scaleController;
+  late AnimationController _fadeController;
+  late Animation<double> _scaleAnimation;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    
+    _scaleController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _scaleController,
+      curve: Curves.elasticOut,
+    ));
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    ));
+
+    // Start animations
+    _fadeController.forward();
+    _scaleController.forward();
+
+    // Auto-close after 1.5 seconds
+    Timer(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        widget.onComplete();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scaleController.dispose();
+    _fadeController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final backgroundColor = widget.isSuccess ? Colors.green : Colors.red;
+    final icon = widget.isSuccess ? Icons.check : Icons.close;
+
+    return Scaffold(
+      backgroundColor: backgroundColor,
+      body: AnimatedBuilder(
+        animation: Listenable.merge([_scaleAnimation, _fadeAnimation]),
+        builder: (context, child) {
+          return SizedBox(
+            width: double.infinity,
+            height: double.infinity,
+            child: Center(
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: ScaleTransition(
+                  scale: _scaleAnimation,
+                  child: Container(
+                    width: 120,
+                    height: 120,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.9),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 20,
+                          spreadRadius: 5,
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      icon,
+                      size: 60,
+                      color: backgroundColor,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

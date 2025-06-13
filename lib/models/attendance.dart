@@ -47,12 +47,11 @@ class QRContent {
 class AttendanceRequest {
   @JsonKey(name: 'qr_content')
   final QRContent qrContent;
-  final AttendanceStatus status;
+  // Status field removed - presence is automatic when scanning QR
   final String? reason;
 
   AttendanceRequest({
     required this.qrContent,
-    required this.status,
     this.reason,
   });
 
@@ -64,20 +63,27 @@ class AttendanceRequest {
 
 @JsonSerializable()
 class AttendanceResponse {
+  final bool? success; // New field from backend
   final String message;
   @JsonKey(name: 'event_id')
   final String eventId;
   @JsonKey(name: 'event_name')
   final String eventName;
-  final AttendanceStatus status;
+  final AttendanceStatus status; // Always "present" now
   final DateTime timestamp;
+  final String? validation; // New field from backend
+  @JsonKey(name: 'table_name')
+  final String? tableName;
 
   AttendanceResponse({
+    this.success,
     required this.message,
     required this.eventId,
     required this.eventName,
     required this.status,
     required this.timestamp,
+    this.validation,
+    this.tableName,
   });
 
   factory AttendanceResponse.fromJson(Map<String, dynamic> json) =>

@@ -67,14 +67,17 @@ class _AttendanceFormState extends State<AttendanceForm>
     });
 
     try {
-      // Parse QR content from the scanned data
+      // Parse QR content from the scanned data      // DEPRECATED: This widget is no longer used in the new automatic attendance flow
+      // Status selection has been eliminated - attendance is now automatic "present"
       final qrContent = _attendanceService.parseQRContent(widget.qrData);
       
       if (qrContent == null) {
         throw Exception('Invalid QR code format');
-      }      final request = AttendanceRequest(
+      }
+
+      // NEW API: Create request without status (automatic presence)
+      final request = AttendanceRequest(
         qrContent: qrContent,
-        status: _selectedStatus,
         reason: _attendanceService.requiresMotivation(_selectedStatus) 
             ? _reasonController.text.trim() 
             : null,

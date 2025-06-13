@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_cloud_backend/screens/qr_scanner_screen.dart';
-import 'package:go_cloud_backend/widgets/qr_scanner/attendance_form.dart';
 import 'package:go_cloud_backend/models/attendance.dart';
 
 void main() {
   group('QR Scanner Tests', () {
-    testWidgets('QR Scanner Screen should build correctly', (WidgetTester tester) async {      await tester.pumpWidget(
+    testWidgets('QR Scanner Screen should build correctly', (WidgetTester tester) async {
+      await tester.pumpWidget(
         const MaterialApp(
           home: QRScannerScreen(),
         ),
@@ -23,67 +23,9 @@ void main() {
       expect(find.text('Gallery'), findsOneWidget);
       expect(find.text('Reset'), findsOneWidget);
       expect(find.text('Flash'), findsOneWidget);
-    });    testWidgets('Attendance Form should build correctly', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Material(
-            child: AttendanceForm(
-              qrData: '{"jwt":"test.jwt.token","type":"attendance","version":"1.0"}',
-              onSubmitSuccess: () {},
-              onCancel: () {},
-            ),
-          ),
-        ),
-      );
-
-      // Verify the form builds
-      expect(find.byType(AttendanceForm), findsOneWidget);
-      
-      // Verify header
-      expect(find.text('Register Attendance'), findsOneWidget);
-      expect(find.text('Confirm your attendance today'), findsOneWidget);
-        // Verify QR data display
-      expect(find.text('✓ QR Code Verified'), findsOneWidget);
-      
-      // Verify status selection
-      expect(find.text('Attendance Status'), findsOneWidget);
-      expect(find.text('Present'), findsOneWidget);
-      
-      // Verify action buttons
-      expect(find.text('Cancel'), findsOneWidget);
-      expect(find.text('Confirm'), findsOneWidget);
     });
 
-    testWidgets('Attendance Form cancel button should work', (WidgetTester tester) async {
-      bool wasCancelled = false;
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Material(
-            child: AttendanceForm(
-              qrData: '{"jwt":"test.jwt.token","type":"attendance","version":"1.0"}',
-              onSubmitSuccess: () {},
-              onCancel: () => wasCancelled = true,
-            ),
-          ),
-        ),
-      );
-
-      // Tap cancel button
-      await tester.tap(find.text('Cancel'));
-      await tester.pump();
-
-      // Verify cancel was called
-      expect(wasCancelled, isTrue);
-    });    test('AttendanceStatus enum should have correct values', () {
-      expect(AttendanceStatus.present.toString(), 'AttendanceStatus.present');
-      expect(AttendanceStatus.hospital.toString(), 'AttendanceStatus.hospital');
-      expect(AttendanceStatus.family.toString(), 'AttendanceStatus.family');
-      expect(AttendanceStatus.emergency.toString(), 'AttendanceStatus.emergency');
-      expect(AttendanceStatus.vacancy.toString(), 'AttendanceStatus.vacancy');
-      expect(AttendanceStatus.personal.toString(), 'AttendanceStatus.personal');
-      expect(AttendanceStatus.notRegistered.toString(), 'AttendanceStatus.notRegistered');
-    });test('QRContent should serialize correctly', () {
+    test('QRContent should serialize correctly', () {
       final qrContent = QRContent(
         jwt: 'test.jwt.token',
         type: 'attendance',
@@ -101,7 +43,7 @@ void main() {
       expect(fromJson.version, qrContent.version);
     });
 
-    test('AttendanceRequest should serialize correctly', () {
+    test('AttendanceRequest should serialize correctly without status', () {
       final qrContent = QRContent(
         jwt: 'test.jwt.token',
         type: 'attendance',
@@ -110,15 +52,14 @@ void main() {
 
       final request = AttendanceRequest(
         qrContent: qrContent,
-        status: AttendanceStatus.present,
-      );      final json = request.toJson();
+      );
+
+      final json = request.toJson();
       expect(json['qr_content'], isA<QRContent>());
-      expect(json['status'], 'present');
       expect(json['reason'], isNull);
 
       final fromJson = AttendanceRequest.fromJson(json);
       expect(fromJson.qrContent.jwt, request.qrContent.jwt);
-      expect(fromJson.status, request.status);
       expect(fromJson.reason, request.reason);
     });
 
@@ -127,19 +68,49 @@ void main() {
         jwt: 'test.jwt.token',
         type: 'attendance',
         version: '1.0',
-      );      final request = AttendanceRequest(
+      );
+
+      final request = AttendanceRequest(
         qrContent: qrContent,
-        status: AttendanceStatus.emergency,
         reason: 'Emergency leave',
-      );      final json = request.toJson();
+      );
+
+      final json = request.toJson();
       expect(json['qr_content'], isA<QRContent>());
-      expect(json['status'], 'emergency');
       expect(json['reason'], 'Emergency leave');
 
       final fromJson = AttendanceRequest.fromJson(json);
       expect(fromJson.qrContent.jwt, request.qrContent.jwt);
-      expect(fromJson.status, request.status);
       expect(fromJson.reason, request.reason);
+    });    test('AttendanceResponse should handle new API fields', () {
+      final response = AttendanceResponse(
+        message: 'Attendance registered successfully',
+        eventId: 'event123',
+        eventName: 'Daily Attendance',
+        status: AttendanceStatus.present,
+        timestamp: DateTime(2024, 1, 15, 9, 0, 0),
+        success: true,
+        validation: 'valid',
+        tableName: 'user_attendance',
+      );
+
+      final json = response.toJson();
+      expect(json['message'], 'Attendance registered successfully');
+      expect(json['event_id'], 'event123');
+      expect(json['event_name'], 'Daily Attendance');
+      expect(json['status'], 'present');
+      expect(json['success'], true);
+      expect(json['validation'], 'valid');
+      expect(json['table_name'], 'user_attendance');
+
+      final fromJson = AttendanceResponse.fromJson(json);
+      expect(fromJson.message, response.message);
+      expect(fromJson.eventId, response.eventId);
+      expect(fromJson.eventName, response.eventName);
+      expect(fromJson.status, response.status);
+      expect(fromJson.success, response.success);
+      expect(fromJson.validation, response.validation);
+      expect(fromJson.tableName, response.tableName);
     });
   });
 }

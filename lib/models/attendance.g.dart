@@ -21,15 +21,37 @@ Map<String, dynamic> _$QRContentToJson(QRContent instance) => <String, dynamic>{
 AttendanceRequest _$AttendanceRequestFromJson(Map<String, dynamic> json) =>
     AttendanceRequest(
       qrContent: QRContent.fromJson(json['qr_content'] as Map<String, dynamic>),
-      status: $enumDecode(_$AttendanceStatusEnumMap, json['status']),
       reason: json['reason'] as String?,
     );
 
 Map<String, dynamic> _$AttendanceRequestToJson(AttendanceRequest instance) =>
     <String, dynamic>{
       'qr_content': instance.qrContent,
-      'status': _$AttendanceStatusEnumMap[instance.status]!,
       'reason': instance.reason,
+    };
+
+AttendanceResponse _$AttendanceResponseFromJson(Map<String, dynamic> json) =>
+    AttendanceResponse(
+      success: json['success'] as bool?,
+      message: json['message'] as String,
+      eventId: json['event_id'] as String,
+      eventName: json['event_name'] as String,
+      status: $enumDecode(_$AttendanceStatusEnumMap, json['status']),
+      timestamp: DateTime.parse(json['timestamp'] as String),
+      validation: json['validation'] as String?,
+      tableName: json['table_name'] as String?,
+    );
+
+Map<String, dynamic> _$AttendanceResponseToJson(AttendanceResponse instance) =>
+    <String, dynamic>{
+      'success': instance.success,
+      'message': instance.message,
+      'event_id': instance.eventId,
+      'event_name': instance.eventName,
+      'status': _$AttendanceStatusEnumMap[instance.status]!,
+      'timestamp': instance.timestamp.toIso8601String(),
+      'validation': instance.validation,
+      'table_name': instance.tableName,
     };
 
 const _$AttendanceStatusEnumMap = {
@@ -41,24 +63,6 @@ const _$AttendanceStatusEnumMap = {
   AttendanceStatus.personal: 'personal',
   AttendanceStatus.notRegistered: 'not_registered',
 };
-
-AttendanceResponse _$AttendanceResponseFromJson(Map<String, dynamic> json) =>
-    AttendanceResponse(
-      message: json['message'] as String,
-      eventId: json['event_id'] as String,
-      eventName: json['event_name'] as String,
-      status: $enumDecode(_$AttendanceStatusEnumMap, json['status']),
-      timestamp: DateTime.parse(json['timestamp'] as String),
-    );
-
-Map<String, dynamic> _$AttendanceResponseToJson(AttendanceResponse instance) =>
-    <String, dynamic>{
-      'message': instance.message,
-      'event_id': instance.eventId,
-      'event_name': instance.eventName,
-      'status': _$AttendanceStatusEnumMap[instance.status]!,
-      'timestamp': instance.timestamp.toIso8601String(),
-    };
 
 AttendanceHistoryItem _$AttendanceHistoryItemFromJson(
         Map<String, dynamic> json) =>
