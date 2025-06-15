@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:math';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'services/prometheus_api_service.dart';
 import '../core/monitoring_models.dart';
@@ -32,8 +33,8 @@ class _PrometheusMonitorScreenRefactoredState extends State<PrometheusMonitorScr
   bool _isRetrying = false;
   String _connectionStatus = 'CONNECTING';
     // Settings
-  bool _autoRefreshEnabled = true;
-  bool _alertNotificationsEnabled = true;
+  final bool _autoRefreshEnabled = true;
+  final bool _alertNotificationsEnabled = true;
   
   // Tab Navigation
   late TabController _tabController;
@@ -43,27 +44,27 @@ class _PrometheusMonitorScreenRefactoredState extends State<PrometheusMonitorScr
     DashboardTab(
       title: 'Overview',
       icon: Icons.dashboard_rounded,
-      gradient: [Color(0xFF667eea), Color(0xFF764ba2)],
+      gradient: [const Color(0xFF667eea), const Color(0xFF764ba2)],
     ),
     DashboardTab(
       title: 'System Health',
       icon: Icons.health_and_safety_rounded,
-      gradient: [Color(0xFF11998e), Color(0xFF38ef7d)],
+      gradient: [const Color(0xFF11998e), const Color(0xFF38ef7d)],
     ),
     DashboardTab(
       title: 'Security',
       icon: Icons.security_rounded,
-      gradient: [Color(0xFFfa709a), Color(0xFFfee140)],
+      gradient: [const Color(0xFFfa709a), const Color(0xFFfee140)],
     ),
     DashboardTab(
       title: 'Analytics',
       icon: Icons.analytics_rounded,
-      gradient: [Color(0xFF4facfe), Color(0xFF00f2fe)],
+      gradient: [const Color(0xFF4facfe), const Color(0xFF00f2fe)],
     ),
     DashboardTab(
       title: 'Performance',
       icon: Icons.speed_rounded,
-      gradient: [Color(0xFFa8edea), Color(0xFFfed6e3)],
+      gradient: [const Color(0xFFa8edea), const Color(0xFFfed6e3)],
     ),
   ];
   
@@ -201,10 +202,8 @@ class _PrometheusMonitorScreenRefactoredState extends State<PrometheusMonitorScr
             OverviewTab(
               dashboardData: _dashboardData,
               onRefresh: _loadDashboardData,
-            ),
-            SystemHealthTab(
-              dashboardData: _dashboardData,
-              onRefresh: _loadDashboardData,
+            ),            SystemHealthTab(
+              data: _dashboardData?['system_resources'] ?? {},
             ),
             SecurityTab(
               dashboardData: _dashboardData,
@@ -258,16 +257,14 @@ class _PrometheusMonitorScreenRefactoredState extends State<PrometheusMonitorScr
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Container(
+                              children: [                                Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.2),
                                     borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.monitor_heart_rounded,
-                                    color: Colors.white,
+                                  ),                                  child: const FaIcon(
+                                    FontAwesomeIcons.fire,
+                                    color: Colors.orange,
                                     size: 20,
                                   ),
                                 ),

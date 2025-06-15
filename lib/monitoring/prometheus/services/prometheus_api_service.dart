@@ -31,9 +31,9 @@ class PrometheusApiService {
       throw Exception('Security API returned status ${response.statusCode}');
     }
   }
-
   /// Load VM health data from API
   Future<Map<String, dynamic>> loadVMHealthData() async {
+    print('🔍 Loading VM Health data from: $_vmHealthUrl');
     final response = await http.get(
       Uri.parse(_vmHealthUrl),
       headers: {
@@ -42,10 +42,14 @@ class PrometheusApiService {
       },
     ).timeout(_requestTimeout);
 
+    print('📊 VM Health API Response Status: ${response.statusCode}');
     if (response.statusCode == 200) {
       _vmHealthData = json.decode(response.body);
+      print('✅ VM Health Data received: ${_vmHealthData.keys}');
+      print('🔧 System Resources: ${_vmHealthData['system_resources']}');
       return _vmHealthData;
     } else {
+      print('❌ VM Health API Error: ${response.statusCode} - ${response.body}');
       throw Exception('VM Health API returned status ${response.statusCode}');
     }
   }
@@ -79,11 +83,13 @@ class PrometheusApiService {
 
     // Combine all data into unified dashboard structure
     return combineSpecializedData();
-  }
-
-  /// Combine data from specialized endpoints
+  }  /// Combine data from specialized endpoints
   Map<String, dynamic> combineSpecializedData() {
-    return {
+    print('🔄 Combining specialized data...');
+    print('📊 VM Health Data Keys: ${_vmHealthData.keys}');
+    print('🔧 System Resources: ${_vmHealthData['system_resources']}');
+    
+    final combinedData = {
       'system_health': {
         'overall_status': _calculateOverallStatus(),
         'services': _buildServicesStatus(),
@@ -104,6 +110,8 @@ class PrometheusApiService {
         'api_usage_stats': _buildApiUsageStats(),
         'database_metrics': _buildDatabaseMetrics(),
       },
+      // ✅ AGGIUNTO: Mappatura diretta per SystemHealthTab
+      'system_resources': _vmHealthData['system_resources'] ?? {},
       'metadata': {
         'data_source': 'prometheus+database',
         'endpoints_used': ['security', 'vm-health', 'insights'],
@@ -115,6 +123,9 @@ class PrometheusApiService {
         'real_data': true,
       }
     };
+    
+    print('🎯 Final system_resources for SystemHealthTab: ${combinedData['system_resources']}');
+    return combinedData;
   }
 
   String _calculateOverallStatus() {
