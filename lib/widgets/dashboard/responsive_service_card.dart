@@ -7,6 +7,7 @@ class ResponsiveServiceCard extends StatelessWidget {
   final List<Color> gradientColors;
   final VoidCallback onTap;
   final bool isEnabled;
+  final Color? iconColor;
 
   const ResponsiveServiceCard({
     super.key,
@@ -16,6 +17,7 @@ class ResponsiveServiceCard extends StatelessWidget {
     required this.gradientColors,
     required this.onTap,
     this.isEnabled = true,
+    this.iconColor,
   });
 
   @override
@@ -115,10 +117,9 @@ class ResponsiveServiceCard extends StatelessWidget {
                             offset: const Offset(0, -1),
                           ),
                         ],
-                      ),
-                      child: Icon(
+                      ),                      child: Icon(
                         icon,
-                        color: Colors.white,
+                        color: iconColor ?? Colors.white,
                         size: iconSize,
                       ),
                     ),

@@ -13,6 +13,13 @@ class OverviewTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Debug logging for Overview
+    print('🎯 OverviewTab - Dashboard data keys: ${dashboardData?.keys}');
+    if (dashboardData != null) {
+      final metadata = dashboardData!['metadata'];
+      print('🎯 OverviewTab - Metadata: $metadata');
+    }
+
     if (dashboardData == null) return _buildNoDataState();
 
     return RefreshIndicator(
@@ -23,6 +30,8 @@ class OverviewTab extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
+            _buildApiEndpointsStatus(), // NEW: Show API endpoints status
+            const SizedBox(height: 24),
             _buildOverviewCards(),
             const SizedBox(height: 24),
             _buildQuickMetrics(),
@@ -30,6 +39,129 @@ class OverviewTab extends StatelessWidget {
             _buildRecentActivity(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildApiEndpointsStatus() {
+    final metadata = dashboardData?['metadata'];
+    final dataSource = metadata?['data_source'] ?? 'unknown';
+    final endpointsUsed = metadata?['endpoints_used'] ?? [];
+    final lastUpdated = metadata?['last_updated'] ?? 'unknown';
+    final collectionTime = metadata?['collection_time_ms'] ?? 0;
+
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: const Color(0xFF1A1A2E),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.api, color: Colors.blue, size: 24),
+              SizedBox(width: 12),
+              Text(
+                'Backend API Status',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildApiEndpointCard('Security', 
+                  dashboardData?['security_metrics'] != null),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildApiEndpointCard('VM Health', 
+                  dashboardData?['system_resources'] != null),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildApiEndpointCard('Analytics', 
+                  dashboardData?['analytics'] != null),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.blue.withOpacity(0.3)),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Data Source: $dataSource',
+                  style: const TextStyle(color: Colors.blue, fontSize: 12),
+                ),
+                Text(
+                  'Collection Time: ${collectionTime}ms',
+                  style: const TextStyle(color: Colors.blue, fontSize: 12),
+                ),
+                Text(
+                  'Endpoints: ${endpointsUsed.toString()}',
+                  style: const TextStyle(color: Colors.blue, fontSize: 12),
+                ),
+                Text(
+                  'Last Updated: ${lastUpdated.substring(0, 19)}',
+                  style: const TextStyle(color: Colors.blue, fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildApiEndpointCard(String name, bool hasData) {
+    final color = hasData ? Colors.green : Colors.red;
+    final icon = hasData ? Icons.check_circle : Icons.error;
+    final status = hasData ? 'Connected' : 'No Data';
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 8),
+          Text(
+            name,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          Text(
+            status,
+            style: TextStyle(
+              color: color,
+              fontSize: 10,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }

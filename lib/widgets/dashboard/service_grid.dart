@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'responsive_service_card.dart';
 import '../../screens/admin_logs_screen.dart';
 import '../../screens/qr_scanner_screen.dart';
@@ -61,18 +62,18 @@ class ServiceGrid extends StatelessWidget {
         isEnabled: true,
       ),
     ];
-    
-    // ADMIN SERVICES (se admin) - ATTIVI
+      // ADMIN SERVICES (se admin) - ATTIVI
     if (isAdmin) {
       cards.addAll([
         // Prometheus - monitoraggio sistema (SOLO ADMIN)
         ResponsiveServiceCard(
           title: 'Prometheus',
           description: 'System monitoring',
-          icon: Icons.monitor_heart_rounded,
+          icon: FontAwesomeIcons.fire,
           gradientColors: const [Color(0xFFfbc2eb), Color(0xFFa6c1ee)],
           onTap: () => _navigateToPrometheus(context),
           isEnabled: true,
+          iconColor: Colors.orange,
         ),
         ResponsiveServiceCard(
           title: 'QR Generator',

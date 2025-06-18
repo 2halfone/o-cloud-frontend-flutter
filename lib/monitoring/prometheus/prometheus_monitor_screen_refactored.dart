@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -196,14 +195,14 @@ class _PrometheusMonitorScreenRefactoredState extends State<PrometheusMonitorScr
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
           _buildModernAppBar(innerBoxIsScrolled),
           _buildTabBar(),
-        ],        body: TabBarView(
-          controller: _tabController,
+        ],        body: TabBarView(          controller: _tabController,
           children: [
             OverviewTab(
               dashboardData: _dashboardData,
               onRefresh: _loadDashboardData,
             ),            SystemHealthTab(
-              data: _dashboardData?['system_resources'] ?? {},
+              dashboardData: _dashboardData,
+              onRefresh: _loadDashboardData,
             ),
             SecurityTab(
               dashboardData: _dashboardData,
@@ -216,7 +215,8 @@ class _PrometheusMonitorScreenRefactoredState extends State<PrometheusMonitorScr
             PerformanceTab(
               dashboardData: _dashboardData,
               onRefresh: _loadDashboardData,
-            ),          ],
+            ),
+          ],
         ),
       ),
     );
