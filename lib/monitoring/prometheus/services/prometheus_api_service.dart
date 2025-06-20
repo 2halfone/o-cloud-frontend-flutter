@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'dart:async';
 import 'package:http/http.dart' as http;
+import '../../../utils/token_manager.dart';
 
 class PrometheusApiService {
-  static const String _baseApiUrl = 'http://34.140.122.146:3003';
+  static const String _baseApiUrl = 'http://34.140.122.146:3000';
   static const String _securityUrl = '$_baseApiUrl/api/dashboard/security';
   static const String _vmHealthUrl = '$_baseApiUrl/api/dashboard/vm-health';
   static const String _insightsUrl = '$_baseApiUrl/api/dashboard/insights';
@@ -13,15 +14,31 @@ class PrometheusApiService {
   Map<String, dynamic> _securityData = {};
   Map<String, dynamic> _vmHealthData = {};
   Map<String, dynamic> _insightsData = {};
-  /// Load security data from API
+
+  // Helper method to get authenticated headers
+  static Future<Map<String, String>> _getAuthHeaders() async {
+    final token = await TokenManager.getToken();
+    final headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'User-Agent': 'Flutter-Dashboard/1.0',
+    };
+    
+    if (token != null) {
+      headers['Authorization'] = 'Bearer $token';
+      print('🔐 Using authenticated headers with token: ${token.substring(0, 20)}...');
+    } else {
+      print('⚠️ No JWT token available for authentication');
+    }
+    
+    return headers;
+  }  /// Load security data from API
   Future<Map<String, dynamic>> loadSecurityData() async {
     print('🔍 Loading Security data from: $_securityUrl');
+    final headers = await _getAuthHeaders();
     final response = await http.get(
       Uri.parse(_securityUrl),
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Flutter-Dashboard/1.0',
-      },
+      headers: headers,
     ).timeout(_requestTimeout);
 
     print('🔐 Security API response status: ${response.statusCode}');
@@ -47,17 +64,14 @@ class PrometheusApiService {
       print('❌ Security API error: ${response.statusCode} - ${response.body}');
       throw Exception('Security API returned status ${response.statusCode}');
     }
-  }
-  /// Load VM health data from API
+  }  /// Load VM health data from API
   Future<Map<String, dynamic>> loadVMHealthData() async {
     print('🔍 Loading VM Health data from: $_vmHealthUrl');
+    final headers = await _getAuthHeaders();
     final response = await http.get(
       Uri.parse(_vmHealthUrl),
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'Flutter-Dashboard/1.0',
-      },
-    ).timeout(_requestTimeout);    print('📊 VM Health API Response Status: ${response.statusCode}');
+      headers: headers,
+    ).timeout(_requestTimeout);print('📊 VM Health API Response Status: ${response.statusCode}');
     if (response.statusCode == 200) {
       _vmHealthData = json.decode(response.body);
       print('✅ VM Health Data received: ${_vmHealthData.keys}');
@@ -79,15 +93,13 @@ class PrometheusApiService {
       throw Exception('VM Health API returned status ${response.statusCode}');
     }
   }
-
   /// Load insights data from API
   Future<Map<String, dynamic>> loadInsightsData() async {
+    print('🔍 Loading Insights data from: $_insightsUrl');
+    final headers = await _getAuthHeaders();
     final response = await http.get(
       Uri.parse(_insightsUrl),
-      headers: {
-        'Accept': 'application/json', 
-        'User-Agent': 'Flutter-Dashboard/1.0',
-      },
+      headers: headers,
     ).timeout(_requestTimeout);
 
     if (response.statusCode == 200) {
@@ -112,8 +124,14 @@ class PrometheusApiService {
   }  /// Combine data from specialized endpoints
   Map<String, dynamic> combineSpecializedData() {
     print('🔄 Combining specialized data...');
-    print('📊 VM Health Data Keys: ${_vmHealthData.keys}');
-    print('🔧 System Resources: ${_vmHealthData['system_resources']}');
+    print('📊 _securityData:');
+    print(jsonEncode(_securityData));
+    print('📊 _vmHealthData:');
+    print(jsonEncode(_vmHealthData));
+    print('📊 _insightsData:');
+    print(jsonEncode(_insightsData));
+    print('📊 VM Health Data Keys: \\${_vmHealthData.keys}');
+    print('🔧 System Resources: \\${_vmHealthData['system_resources']}');
     
     // Extract VM Health data from the correct location
     Map<String, dynamic> vmData = {};
@@ -150,7 +168,8 @@ class PrometheusApiService {
         'services': _buildServicesStatus(),
         'performance': _vmHealthData['response_times'] ?? {},
         'resource_usage': systemResources,
-      },      'security_metrics': {
+      },
+      'security_metrics': {
         'authentication_stats': (_securityData['data'] ?? {})['authentication_stats'] ?? {},
         'jwt_validation': (_securityData['data'] ?? {})['jwt_validation'] ?? {},
         'user_activity': (_securityData['data'] ?? {})['user_activity'] ?? {},
@@ -164,7 +183,6 @@ class PrometheusApiService {
         'api_usage_stats': _buildApiUsageStats(),
         'database_metrics': _buildDatabaseMetrics(),
       },
-      // ✅ AGGIUNTO: Mappatura diretta per SystemHealthTab
       'system_resources': systemResources,
       'metadata': {
         'data_source': 'prometheus+database',
@@ -177,8 +195,9 @@ class PrometheusApiService {
         'real_data': true,
       }
     };
-    
-    print('🎯 Final system_resources for SystemHealthTab: ${combinedData['system_resources']}');
+    print('🎯 Final combinedData for OverviewTab:');
+    print(jsonEncode(combinedData));
+    print('🎯 Final system_resources for SystemHealthTab: \\${combinedData['system_resources']}');
     return combinedData;
   }
   String _calculateOverallStatus() {

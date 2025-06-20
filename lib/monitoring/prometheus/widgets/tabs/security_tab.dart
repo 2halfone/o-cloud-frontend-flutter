@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../services/prometheus_api_service.dart';
 
-class SecurityTab extends StatelessWidget {
+class SecurityTab extends StatefulWidget {
   final Map<String, dynamic>? dashboardData;
   final VoidCallback? onRefresh;
 
@@ -11,55 +12,54 @@ class SecurityTab extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Debug logging per le nuove strutture dati
-    print('🔐 SecurityTab - Dashboard data keys: ${dashboardData?.keys}');
-    if (dashboardData != null) {
-      print('🔐 SecurityTab - Security metrics: ${dashboardData!['security_metrics']}');
-      print('🔐 SecurityTab - Full data structure:');
-      dashboardData!.forEach((key, value) {
-        print('  - $key: ${value.runtimeType}');
-        if (value is Map) {
-          print('    Keys: ${value.keys}');
-          // Debug more detail for security_metrics
-          if (key == 'security_metrics') {
-            value.forEach((subKey, subValue) {
-              print('      - $subKey: $subValue (${subValue.runtimeType})');
-              if (subValue is Map && subValue.isNotEmpty) {
-                print('        Sub-keys: ${subValue.keys}');
-              }
-            });
-          }
-        }
+  State<SecurityTab> createState() => _SecurityTabState();
+}
+
+class _SecurityTabState extends State<SecurityTab> {
+  Map<String, dynamic>? _securityData;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSecurityData();
+  }
+
+  Future<void> _loadSecurityData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final data = await PrometheusApiService().loadSecurityData();
+      setState(() {
+        _securityData = data;
+        _isLoading = false;
       });
-      
-      // Check if security data might be elsewhere
-      print('🔍 Checking for security data in other locations...');
-      if (dashboardData!.containsKey('security')) {
-        print('🔐 Found \'security\' key: ${dashboardData!['security']}');
-      }
-      if (dashboardData!.containsKey('auth')) {
-        print('🔐 Found \'auth\' key: ${dashboardData!['auth']}');
-      }
-      if (dashboardData!.containsKey('authentication')) {
-        print('🔐 Found \'authentication\' key: ${dashboardData!['authentication']}');
-      }
-      
-      // Check if there's any data that looks like authentication stats
-      dashboardData!.forEach((key, value) {
-        if (key.toLowerCase().contains('auth') || 
-            key.toLowerCase().contains('security') || 
-            key.toLowerCase().contains('jwt') ||
-            key.toLowerCase().contains('login')) {
-          print('🔐 Potential security data in \'$key\': $value');
-        }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
       });
     }
+  }
 
-    if (dashboardData == null) return _buildNoDataState();
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return _buildLoadingState();
+    }
+    if (_error != null) {
+      return _buildErrorState();
+    }
+    if (_securityData == null) return _buildNoDataState();
 
     return RefreshIndicator(
-      onRefresh: () async => onRefresh?.call(),
+      onRefresh: () async {
+        await _loadSecurityData();
+        widget.onRefresh?.call();
+      },
       backgroundColor: const Color(0xFF1A1A2E),
       color: const Color(0xFFfa709a),
       child: SingleChildScrollView(
@@ -80,6 +80,50 @@ class SecurityTab extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildLoadingState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(color: Color(0xFFfa709a)),
+          SizedBox(height: 16),
+          Text(
+            'Loading Security Data...',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error, color: Colors.red, size: 48),
+          const SizedBox(height: 16),
+          const Text(
+            'Error loading security data',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _error ?? 'Unknown error',
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadSecurityData,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildNoDataState() {
     print('🔐 Building no data state for SecurityTab');
     return const Center(
@@ -190,8 +234,8 @@ class SecurityTab extends StatelessWidget {
   Widget _buildMetricsGrid() {
     final securityMetrics = _getSecurityMetrics();
       // Try to get real auth data from dashboardData (same data used by Analytics)
-    final authLogs = dashboardData?['auth_logs'];
-    final users = dashboardData?['users'];
+    final authLogs = _securityData?['auth_logs'];
+    final users = _securityData?['users'];
     
     // Calculate failed attempts from real data or use fallback
     int failedAttempts = 0;
@@ -384,7 +428,7 @@ class SecurityTab extends StatelessWidget {
     );
   }  Widget _buildAuthenticationDetails(Map<String, dynamic>? securityMetrics) {
     // Try to get real auth data from dashboardData (same data used by Analytics)
-    final authLogs = dashboardData?['auth_logs'];
+    final authLogs = _securityData?['auth_logs'];
     
     // Calculate failed attempts from real data or use fallback
     int failedAttempts = 0;
@@ -474,7 +518,7 @@ class SecurityTab extends StatelessWidget {
     );
   }  Widget _buildJWTValidationDetails(Map<String, dynamic>? securityMetrics) {
     // Try to get real auth data from dashboardData (same data used by Analytics)
-    final authLogs = dashboardData?['auth_logs'];
+    final authLogs = _securityData?['auth_logs'];
     
     // Calculate JWT validation metrics from real data or use fallback
     int validTokens = 0;
@@ -773,7 +817,7 @@ class SecurityTab extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(
-            'Data Structure: ${dashboardData?.keys.join(', ')}',
+            'Data Structure: ${_securityData?.keys.join(', ')}',
             style: const TextStyle(
               color: Colors.grey,
               fontSize: 12,
@@ -810,14 +854,16 @@ class SecurityTab extends StatelessWidget {
     }
     
     return 0.0;
-  }  Map<String, dynamic>? _getSecurityMetrics() {
-    if (dashboardData == null) return null;
+  }  Map<String, dynamic>? get _securityMetricsData => _getSecurityMetrics();
+
+  Map<String, dynamic>? _getSecurityMetrics() {
+    if (_securityData == null) return null;
     
     print('🔍 _getSecurityMetrics called - looking for security data...');
     
     // Try different possible locations for security metrics
-    if (dashboardData!.containsKey('security_metrics')) {
-      final securityData = dashboardData!['security_metrics'];
+    if (_securityData!.containsKey('security_metrics')) {
+      final securityData = _securityData!['security_metrics'];
       print('🔐 Found security_metrics: $securityData');
       // Safe cast to handle _Map<dynamic, dynamic>
       if (securityData is Map) {
@@ -867,8 +913,8 @@ class SecurityTab extends StatelessWidget {
       }
     }
     
-    if (dashboardData!.containsKey('security')) {
-      final securityData = dashboardData!['security'];
+    if (_securityData!.containsKey('security')) {
+      final securityData = _securityData!['security'];
       print('🔐 Found security: $securityData');
       // Safe cast to handle _Map<dynamic, dynamic>
       if (securityData is Map) {
@@ -878,12 +924,12 @@ class SecurityTab extends StatelessWidget {
     
     // Check if any security-related data is at root level
     print('🔐 Checking for security data at root level...');
-    if (dashboardData!.containsKey('authentication_stats') || 
-        dashboardData!.containsKey('jwt_validation') ||
-        dashboardData!.containsKey('user_activity') ||
-        dashboardData!.containsKey('security_level')) {
+    if (_securityData!.containsKey('authentication_stats') || 
+        _securityData!.containsKey('jwt_validation') ||
+        _securityData!.containsKey('user_activity') ||
+        _securityData!.containsKey('security_level')) {
       print('🔐 Found security data at root level');
-      return Map<String, dynamic>.from(dashboardData!);
+      return Map<String, dynamic>.from(_securityData!);
     }
     
     print('🔐 No security data found anywhere, returning null');

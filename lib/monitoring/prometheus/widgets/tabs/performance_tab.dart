@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../services/analytics_api_service.dart';
+import '../../services/prometheus_api_service.dart';
 
 class PerformanceTab extends StatefulWidget {
   final Map<String, dynamic>? dashboardData;
@@ -16,60 +16,48 @@ class PerformanceTab extends StatefulWidget {
 }
 
 class _PerformanceTabState extends State<PerformanceTab> {
-  Map<String, dynamic>? _analyticsData;
-  bool _isLoadingAnalytics = false;
-  String? _analyticsError;
+  Map<String, dynamic>? _performanceData;
+  bool _isLoading = false;
+  String? _error;
 
   @override
   void initState() {
     super.initState();
-    _loadRealAnalyticsData();
+    _loadPerformanceData();
   }
 
-  Future<void> _loadRealAnalyticsData() async {
+  Future<void> _loadPerformanceData() async {
     setState(() {
-      _isLoadingAnalytics = true;
-      _analyticsError = null;
+      _isLoading = true;
+      _error = null;
     });
-
     try {
-      print('🚀 PerformanceTab - Loading real analytics data...');
-      final data = await AnalyticsApiService.getAllAnalyticsData();
+      final data = await PrometheusApiService().loadVMHealthData();
       setState(() {
-        _analyticsData = data;
-        _isLoadingAnalytics = false;
+        _performanceData = data;
+        _isLoading = false;
       });
-      print('🚀 PerformanceTab - Real analytics data loaded successfully');
-      print('🚀 PerformanceTab - Analytics data keys: ${data.keys}');
     } catch (e) {
       setState(() {
-        _analyticsError = e.toString();
-        _isLoadingAnalytics = false;
+        _error = e.toString();
+        _isLoading = false;
       });
-      print('❌ PerformanceTab - Error loading real analytics data: $e');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Debug logging per vedere tutti i dati disponibili
-    print('🚀 PerformanceTab BUILD - Status:');
-    print('   - dashboardData keys: ${widget.dashboardData?.keys}');
-    print('   - _analyticsData keys: ${_analyticsData?.keys}');
-    print('   - _isLoadingAnalytics: $_isLoadingAnalytics');
-    print('   - _analyticsError: $_analyticsError');
-    
-    if (widget.dashboardData != null) {
-      print('   - system_health: ${widget.dashboardData!['system_health']?.keys}');
-      print('   - analytics: ${widget.dashboardData!['analytics']?.keys}');
-      print('   - security_metrics: ${widget.dashboardData!['security_metrics']?.keys}');
+    if (_isLoading) {
+      return _buildLoadingState();
     }
-
-    if (widget.dashboardData == null) return _buildNoDataState();
+    if (_error != null) {
+      return _buildErrorState();
+    }
+    if (_performanceData == null) return _buildNoDataState();
 
     return RefreshIndicator(
       onRefresh: () async {
-        await _loadRealAnalyticsData();
+        await _loadPerformanceData();
         widget.onRefresh?.call();
       },
       backgroundColor: const Color(0xFF1A1A2E),
@@ -91,10 +79,53 @@ class _PerformanceTabState extends State<PerformanceTab> {
     );
   }
 
+  Widget _buildLoadingState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(color: Color(0xFFa8edea)),
+          SizedBox(height: 16),
+          Text(
+            'Loading Performance Data...',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error, color: Colors.red, size: 48),
+          const SizedBox(height: 16),
+          const Text(
+            'Error loading performance data',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _error ?? 'Unknown error',
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadPerformanceData,
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPerformanceOverview() {
     // Combina dati da dashboardData (Prometheus) e _analyticsData (API reali)
-    final systemHealth = widget.dashboardData?['system_health'];
-    final analytics = widget.dashboardData?['analytics'];
+    final systemHealth = _performanceData?['system_health'];
+    final analytics = _performanceData?['analytics'];
     
     // Dati da system_health.services (response times dei servizi)
     final services = systemHealth?['services'] as List<dynamic>? ?? [];
@@ -103,10 +134,10 @@ class _PerformanceTabState extends State<PerformanceTab> {
     
     print('🚀 Performance Overview - Calculating metrics...');
     // Calcola metriche combinando dati Prometheus e API reali
-    final servicesUp = _getServicesUpCount(services, _analyticsData);
+    final servicesUp = _getServicesUpCount(services, _performanceData);
     final avgResponseTime = _getAverageResponseTime(services);
     final systemLoad = _getSystemLoad(apiUsageStats);
-    final requestsPerHour = _getRequestsPerHour(apiUsageStats, _analyticsData);
+    final requestsPerHour = _getRequestsPerHour(apiUsageStats, _performanceData);
 
     print('🚀 Performance metrics calculated:');
     print('  - Services Up: $servicesUp');
@@ -179,14 +210,14 @@ class _PerformanceTabState extends State<PerformanceTab> {
   }
 
   Widget _buildApiMetrics() {
-    final analytics = widget.dashboardData?['analytics'];
+    final analytics = _performanceData?['analytics'];
     final apiUsageStats = analytics?['api_usage_stats'];
     
     print('🚀 API Metrics - Prometheus analytics: ${analytics?.keys}');
-    print('🚀 API Metrics - Real analytics: ${_analyticsData?.keys}');
+    print('🚀 API Metrics - Real analytics: ${_performanceData?.keys}');
     
     // Combina dati Prometheus e API reali per endpoint
-    final displayEndpoints = _calculateTopEndpoints(apiUsageStats, analytics, _analyticsData);
+    final displayEndpoints = _calculateTopEndpoints(apiUsageStats, analytics, _performanceData);
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -305,13 +336,13 @@ class _PerformanceTabState extends State<PerformanceTab> {
   }
 
   Widget _buildServiceMetrics() {
-    final systemHealth = widget.dashboardData?['system_health'];
+    final systemHealth = _performanceData?['system_health'];
 
     print('🚀 Service Metrics - Prometheus systemHealth: ${systemHealth?.keys}');
-    print('🚀 Service Metrics - Real analytics: ${_analyticsData?.keys}');
+    print('🚀 Service Metrics - Real analytics: ${_performanceData?.keys}');
     
     // Combina dati Prometheus e API reali per determinare stato servizi
-    final displayServices = _calculateServices(systemHealth, _analyticsData);
+    final displayServices = _calculateServices(systemHealth, _performanceData);
 
     print('🚀 Service Metrics - displayServices: $displayServices');
 
@@ -513,7 +544,7 @@ class _PerformanceTabState extends State<PerformanceTab> {
     );
   }
   Widget _buildPerformanceDebugInfo() {
-    final systemHealth = widget.dashboardData?['system_health'];
+    final systemHealth = _performanceData?['system_health'];
     
     return Container(
       padding: const EdgeInsets.all(16),
@@ -541,9 +572,9 @@ class _PerformanceTabState extends State<PerformanceTab> {
           ),
           const SizedBox(height: 12),
           Text(
-            'Prometheus Data: ${widget.dashboardData != null ? "✅ YES" : "❌ NO"}',
+            'Prometheus Data: ${_performanceData != null ? "✅ YES" : "❌ NO"}',
             style: TextStyle(
-              color: widget.dashboardData != null ? Colors.green : Colors.red,
+              color: _performanceData != null ? Colors.green : Colors.red,
               fontSize: 14,
             ),
           ),
@@ -554,34 +585,34 @@ class _PerformanceTabState extends State<PerformanceTab> {
             ),
           ],
           Text(
-            'Real Analytics Data: ${_analyticsData != null ? "✅ YES" : "❌ NO"}',
+            'Real Analytics Data: ${_performanceData != null ? "✅ YES" : "❌ NO"}',
             style: TextStyle(
-              color: _analyticsData != null ? Colors.green : Colors.red,
+              color: _performanceData != null ? Colors.green : Colors.red,
               fontSize: 14,
             ),
           ),
-          if (_analyticsData != null) ...[
+          if (_performanceData != null) ...[
             Text(
-              '  • Auth Logs: ${_analyticsData!['auth_logs'] != null ? "✅" : "❌"}',
+              '  • Auth Logs: ${_performanceData!['auth_logs'] != null ? "✅" : "❌"}',
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
             Text(
-              '  • Users: ${_analyticsData!['users'] != null ? "✅" : "❌"}',
+              '  • Users: ${_performanceData!['users'] != null ? "✅" : "❌"}',
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
             Text(
-              '  • QR Events: ${_analyticsData!['qr_events'] != null ? "✅" : "❌"}',
+              '  • QR Events: ${_performanceData!['qr_events'] != null ? "✅" : "❌"}',
               style: const TextStyle(color: Colors.white70, fontSize: 12),
             ),
           ],
-          if (_isLoadingAnalytics)
+          if (_isLoading)
             const Text(
               'Loading real analytics data...',
               style: TextStyle(color: Colors.orange, fontSize: 12),
             ),
-          if (_analyticsError != null)
+          if (_error != null)
             Text(
-              'Analytics error: $_analyticsError',
+              'Analytics error: $_error',
               style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
         ],
@@ -830,7 +861,7 @@ class _PerformanceTabState extends State<PerformanceTab> {
     Map<String, dynamic>? realData
   ) {
     print('🔧 _calculateServices - Prometheus: ${systemHealth?.keys}, Real: ${realData?.keys}');
-    print('🔧 _calculateServices - Loading state: $_isLoadingAnalytics, Error: $_analyticsError');
+    print('🔧 _calculateServices - Loading state: $_isLoading, Error: $_error');
     
     // ✅ PRIORITÀ 1: Dati API reali (se le API funzionano, i servizi sono UP!)
     if (realData != null) {
@@ -918,7 +949,7 @@ class _PerformanceTabState extends State<PerformanceTab> {
     }
     
     // ✅ PRIORITÀ 2: Se stiamo ancora caricando, usa servizi "loading"
-    if (_isLoadingAnalytics) {
+    if (_isLoading) {
       print('🔧 PRIORITY 2: Still loading real data, showing loading state...');
       return [
         {'name': 'Auth Service', 'status': 'LOADING', 'uptime_percent': 0.0, 'response_time_ms': 0},
@@ -928,7 +959,7 @@ class _PerformanceTabState extends State<PerformanceTab> {
     }
     
     // ✅ PRIORITÀ 3: Se c'è errore API, usa dati Prometheus se disponibili
-    if (_analyticsError != null && systemHealth != null) {
+    if (_error != null && systemHealth != null) {
       print('🔧 PRIORITY 3: API error, trying Prometheus data...');
       final services = systemHealth['services'] as List<dynamic>?;
       if (services != null && services.isNotEmpty) {

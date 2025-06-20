@@ -1,6 +1,6 @@
 class MonitoringConfig {
   // API Endpoints
-  static const String baseApiUrl = 'http://34.140.122.146:3003';
+  static const String baseApiUrl = 'http://34.140.122.146:3000';
   static const String securityUrl = '$baseApiUrl/api/dashboard/security';
   static const String vmHealthUrl = '$baseApiUrl/api/dashboard/vm-health';
   static const String insightsUrl = '$baseApiUrl/api/dashboard/insights';

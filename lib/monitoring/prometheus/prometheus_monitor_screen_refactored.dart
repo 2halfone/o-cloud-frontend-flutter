@@ -119,17 +119,43 @@ class _PrometheusMonitorScreenRefactoredState extends State<PrometheusMonitorScr
         if (_retryCount == 0) _isLoading = true;
       });
 
-      final combinedData = await _apiService.loadAllDashboardData();
+      Map<String, dynamic> combinedData = {};
+      bool allFailed = true;
+      bool anySuccess = false;
+      try {
+        combinedData = await _apiService.loadAllDashboardData();
+        allFailed = false;
+        anySuccess = true;
+      } catch (e) {
+        // Try endpoints individually
+        try {
+          final security = await _apiService.loadSecurityData();
+          combinedData['security_metrics'] = security['data'] ?? {};
+          anySuccess = true;
+        } catch (_) {}
+        try {
+          final vm = await _apiService.loadVMHealthData();
+          combinedData['system_health'] = vm['data'] ?? {};
+          combinedData['system_resources'] = vm['data']?['system_resources'] ?? {};
+          anySuccess = true;
+        } catch (_) {}
+        try {
+          final insights = await _apiService.loadInsightsData();
+          combinedData['analytics'] = insights;
+          anySuccess = true;
+        } catch (_) {}
+        allFailed = !anySuccess;
+      }
 
-      if (!mounted) return;      setState(() {
+      if (!mounted) return;
+      setState(() {
         _dashboardData = combinedData;
         _isLoading = false;
         _error = null;
         _retryCount = 0;
-        _connectionStatus = 'LIVE';
+        _connectionStatus = allFailed ? 'OFFLINE' : 'LIVE';
       });
-      
-      _showConnectionSuccess();
+      if (!allFailed) _showConnectionSuccess();
 
     } catch (e) {
       if (!mounted) return;
@@ -139,13 +165,11 @@ class _PrometheusMonitorScreenRefactoredState extends State<PrometheusMonitorScr
 
   Future<void> _handleNetworkError(dynamic error) async {
     String errorDetails = _apiService.analyzeNetworkError(error);
-    
     setState(() {
       _connectionStatus = 'OFFLINE';
       _error = 'Connection Error: $errorDetails\n\nEndpoints: Security, VM-Health, Insights\nAttempts: $_connectionAttempts';
       _isLoading = false;
     });
-
     await _retryWithBackoff();
   }
 
@@ -197,10 +221,8 @@ class _PrometheusMonitorScreenRefactoredState extends State<PrometheusMonitorScr
           _buildTabBar(),
         ],        body: TabBarView(          controller: _tabController,
           children: [
-            OverviewTab(
-              dashboardData: _dashboardData,
-              onRefresh: _loadDashboardData,
-            ),            SystemHealthTab(
+            OverviewTab(),
+            SystemHealthTab(
               dashboardData: _dashboardData,
               onRefresh: _loadDashboardData,
             ),

@@ -1,40 +1,119 @@
 import 'package:flutter/material.dart';
 import '../../../core/monitoring_utils.dart';
+import '../../services/prometheus_api_service.dart';
 
-class OverviewTab extends StatelessWidget {
-  final Map<String, dynamic>? dashboardData;
-  final VoidCallback? onRefresh;
+class OverviewTab extends StatefulWidget {
+  const OverviewTab({super.key});
 
-  const OverviewTab({
-    super.key,
-    this.dashboardData,
-    this.onRefresh,
-  });
+  @override
+  State<OverviewTab> createState() => _OverviewTabState();
+}
+
+class _OverviewTabState extends State<OverviewTab> {
+  Map<String, dynamic>? _dashboardData;
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchDashboardData();
+  }
+
+  Future<void> _fetchDashboardData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      Map<String, dynamic> data;
+      try {
+        data = await PrometheusApiService().loadAllDashboardData();
+      } catch (e) {
+        // If Insights API fails, try to load security and VM health only
+        print('⚠️ Insights API failed, attempting partial dashboard load: $e');
+        data = {};
+        try {
+          final security = await PrometheusApiService().loadSecurityData();
+          data['security_metrics'] = security['data'] ?? {};
+        } catch (e) {
+          print('❌ Security API also failed: $e');
+        }
+        try {
+          final vm = await PrometheusApiService().loadVMHealthData();
+          data['system_health'] = vm['data'] ?? {};
+          data['system_resources'] = vm['data']?['system_resources'] ?? {};
+        } catch (e) {
+          print('❌ VM Health API also failed: $e');
+        }
+        // No analytics if Insights failed
+        data['analytics'] = null;
+      }
+      setState(() {
+        _dashboardData = data;
+        _isLoading = false;
+      });
+      print('🎯 OverviewTab - Dashboard data keys: \\${data.keys}');
+      if (data['metadata'] != null) {
+        print('🎯 OverviewTab - Metadata: \\${data['metadata']}');
+      }
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+      print('❌ OverviewTab - Error fetching dashboard data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // Debug logging for Overview
-    print('🎯 OverviewTab - Dashboard data keys: ${dashboardData?.keys}');
-    if (dashboardData != null) {
-      final metadata = dashboardData!['metadata'];
-      print('🎯 OverviewTab - Metadata: $metadata');
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (_error != null) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red, size: 48),
+            const SizedBox(height: 16),
+            Text('Error loading data', style: const TextStyle(color: Colors.red, fontSize: 18)),
+            const SizedBox(height: 8),
+            Text(_error!, style: const TextStyle(color: Colors.white70)),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: _fetchDashboardData,
+              child: const Text('Retry'),
+            ),
+          ],
+        ),
+      );
+    }
+    if (_dashboardData == null) return _buildNoDataState();
+
+    // Check if at least one main section has data
+    final hasSystemHealth = _dashboardData?['system_health'] != null;
+    final hasSecurity = _dashboardData?['security_metrics'] != null;
+    final hasAnalytics = _dashboardData?['analytics'] != null;
+    final hasSystemResources = _dashboardData?['system_resources'] != null;
+    if (!hasSystemHealth && !hasSecurity && !hasAnalytics && !hasSystemResources) {
+      return _buildNoDataState();
     }
 
-    if (dashboardData == null) return _buildNoDataState();
-
     return RefreshIndicator(
-      onRefresh: () async => onRefresh?.call(),
+      onRefresh: _fetchDashboardData,
       backgroundColor: const Color(0xFF1A1A2E),
       color: const Color(0xFF667eea),
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            _buildApiEndpointsStatus(), // NEW: Show API endpoints status
+            if (hasSystemHealth || hasSecurity || hasSystemResources) _buildApiEndpointsStatus(),
             const SizedBox(height: 24),
-            _buildOverviewCards(),
+            if (hasSystemHealth || hasSecurity || hasAnalytics) _buildOverviewCards(),
             const SizedBox(height: 24),
-            _buildQuickMetrics(),
+            if (hasSystemHealth) _buildQuickMetrics() else _buildSectionWarning('Quick Metrics unavailable'),
             const SizedBox(height: 24),
             _buildRecentActivity(),
           ],
@@ -44,7 +123,7 @@ class OverviewTab extends StatelessWidget {
   }
 
   Widget _buildApiEndpointsStatus() {
-    final metadata = dashboardData?['metadata'];
+    final metadata = _dashboardData?['metadata'];
     final dataSource = metadata?['data_source'] ?? 'unknown';
     final endpointsUsed = metadata?['endpoints_used'] ?? [];
     final lastUpdated = metadata?['last_updated'] ?? 'unknown';
@@ -79,17 +158,19 @@ class OverviewTab extends StatelessWidget {
             children: [
               Expanded(
                 child: _buildApiEndpointCard('Security', 
-                  dashboardData?['security_metrics'] != null),
+                  _dashboardData?['security_metrics'] != null),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildApiEndpointCard('VM Health', 
-                  dashboardData?['system_resources'] != null),
+                child: _dashboardData?['system_resources'] != null
+                  ? _buildApiEndpointCard('VM Health', true)
+                  : _buildSectionWarning('VM Health data unavailable'),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: _buildApiEndpointCard('Analytics', 
-                  dashboardData?['analytics'] != null),
+                child: _dashboardData?['analytics'] != null
+                  ? _buildApiEndpointCard('Analytics', true)
+                  : _buildSectionWarning('Analytics data unavailable'),
               ),
             ],
           ),
@@ -109,15 +190,15 @@ class OverviewTab extends StatelessWidget {
                   style: const TextStyle(color: Colors.blue, fontSize: 12),
                 ),
                 Text(
-                  'Collection Time: ${collectionTime}ms',
+                  'Collection Time: \${collectionTime}ms',
                   style: const TextStyle(color: Colors.blue, fontSize: 12),
                 ),
                 Text(
-                  'Endpoints: ${endpointsUsed.toString()}',
+                  'Endpoints: \${endpointsUsed.toString()}',
                   style: const TextStyle(color: Colors.blue, fontSize: 12),
                 ),
                 Text(
-                  'Last Updated: ${lastUpdated.substring(0, 19)}',
+                  'Last Updated: \${lastUpdated.toString().substring(0, 19)}',
                   style: const TextStyle(color: Colors.blue, fontSize: 12),
                 ),
               ],
@@ -171,7 +252,6 @@ class OverviewTab extends StatelessWidget {
       builder: (context, constraints) {
         int crossAxisCount = constraints.maxWidth > 600 ? 3 : 2;
         double childAspectRatio = constraints.maxWidth > 600 ? 1.4 : 1.3;
-        
         return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -182,25 +262,25 @@ class OverviewTab extends StatelessWidget {
           children: [
             _buildOverviewCard(
               'System Health',
-              dashboardData?['system_health']?['overall_status'] ?? 'UNKNOWN',
+              _dashboardData?['system_health']?['overall_status'] ?? 'UNKNOWN',
               Icons.health_and_safety_rounded,
-              MonitoringUtils.getSystemHealthColor(dashboardData?['system_health']?['overall_status']),
+              MonitoringUtils.getSystemHealthColor(_dashboardData?['system_health']?['overall_status']),
             ),
             _buildOverviewCard(
               'Security Level',
-              MonitoringUtils.getSecurityDisplayText(dashboardData?['security_metrics']?['security_level']),
+              MonitoringUtils.getSecurityDisplayText(_dashboardData?['security_metrics']?['security_level']),
               Icons.security_rounded,
-              MonitoringUtils.getSecurityLevelColor(dashboardData?['security_metrics']?['security_level'] ?? 'UNKNOWN'),
+              MonitoringUtils.getSecurityLevelColor(_dashboardData?['security_metrics']?['security_level'] ?? 'UNKNOWN'),
             ),
             _buildOverviewCard(
               'Active Users',
-              '${dashboardData?['analytics']?['user_behavior']?['active_users'] ?? '0'}',
+              '\\${_dashboardData?['analytics']?['user_behavior']?['active_users'] ?? '0'}',
               Icons.people_rounded,
               Colors.purple,
             ),
             _buildOverviewCard(
               'QR Scans Today',
-              '${dashboardData?['analytics']?['qr_code_analytics']?['total_scans_24h'] ?? '0'}',
+              '\\${_dashboardData?['analytics']?['qr_code_analytics']?['total_scans_24h'] ?? '0'}',
               Icons.qr_code_scanner_rounded,
               Colors.orange,
             ),
@@ -239,28 +319,36 @@ class OverviewTab extends StatelessWidget {
             Icon(icon, color: Colors.white, size: 24),
             const SizedBox(height: 8),
             Flexible(
-              child: Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
             const SizedBox(height: 4),
             Flexible(
-              child: Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.9),
-                  fontSize: 11,
-                  fontWeight: FontWeight.w500,
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.9),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -294,19 +382,19 @@ class OverviewTab extends StatelessWidget {
             children: [
               _buildQuickMetric(
                 'CPU', 
-                '${MonitoringUtils.safeToFixedString(MonitoringUtils.safeToDouble(dashboardData?['system_health']?['resource_usage']?['cpu_usage_percent']), 1)}%', 
+                '\\${MonitoringUtils.safeToFixedString(MonitoringUtils.safeToDouble(_dashboardData?['system_health']?['resource_usage']?['cpu_usage_percent']), 1)}%', 
                 Icons.memory, 
                 Colors.blue
               ),
               _buildQuickMetric(
                 'Memory', 
-                '${MonitoringUtils.safeToFixedString(MonitoringUtils.safeToDouble(dashboardData?['system_health']?['resource_usage']?['memory_usage_percent']), 1)}%', 
+                '\\${MonitoringUtils.safeToFixedString(MonitoringUtils.safeToDouble(_dashboardData?['system_health']?['resource_usage']?['memory_usage_percent']), 1)}%', 
                 Icons.storage, 
                 Colors.green
               ),
               _buildQuickMetric(
                 'Network', 
-                '${MonitoringUtils.safeToFixedString(MonitoringUtils.safeToDouble(dashboardData?['system_health']?['resource_usage']?['network_usage']), 1)} MB/s', 
+                '\\${MonitoringUtils.safeToFixedString(MonitoringUtils.safeToDouble(_dashboardData?['system_health']?['resource_usage']?['network_usage']), 1)} MB/s', 
                 Icons.network_check, 
                 Colors.purple
               ),
@@ -468,6 +556,42 @@ class OverviewTab extends StatelessWidget {
               color: Colors.grey,
               fontSize: 14,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionWarning(String message) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.red.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: Colors.red.withOpacity(0.3)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.warning, color: Colors.red, size: 20),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: const TextStyle(
+              color: Colors.red,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'No Data',
+            style: TextStyle(
+              color: Colors.red.withOpacity(0.8),
+              fontSize: 10,
+            ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

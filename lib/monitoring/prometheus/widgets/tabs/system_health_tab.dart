@@ -1,107 +1,68 @@
 import 'package:flutter/material.dart';
 import 'dart:developer';
+import '../../services/prometheus_api_service.dart';
 
-class SystemHealthTab extends StatelessWidget {
+class SystemHealthTab extends StatefulWidget {
   final Map<String, dynamic>? dashboardData;
-  final VoidCallback? onRefresh;  SystemHealthTab({
+  final VoidCallback? onRefresh;
+
+  const SystemHealthTab({
     super.key,
     this.dashboardData,
     this.onRefresh,
-  }) {
-    print('🏗️ SystemHealthTab CONSTRUCTOR called');
-  }  @override
-  Widget build(BuildContext context) {
-    print('🚨🚨🚨 SystemHealthTab BUILD METHOD CALLED 🚨🚨🚨');
-    print('🚨 dashboardData is null: ${dashboardData == null}');
-    if (dashboardData != null) {
-      print('🚨 dashboardData keys: ${dashboardData!.keys.toList()}');
-    }
-    
-    // Debug completo per capire la struttura
-    log('🎯 SystemHealthTab BUILD START');
-    log('📊 dashboardData is null: ${dashboardData == null}');
-    
-    if (dashboardData != null) {
-      log('📊 dashboardData keys: ${dashboardData!.keys.toList()}');
-      
-      // Log della struttura vm_health (most recent backend structure)
-      if (dashboardData!.containsKey('vm_health')) {
-        final vmHealth = dashboardData!['vm_health'];
-        log('📊 vm_health type: ${vmHealth.runtimeType}');
-        log('📊 vm_health content: $vmHealth');
-        
-        if (vmHealth is Map) {
-          log('📊 vm_health keys: ${vmHealth.keys.toList()}');
-          
-          // Check for direct metrics
-          for (var key in ['cpu_usage_percent', 'memory_usage_percent', 'disk_usage_percent', 'network_usage_percent']) {
-            if (vmHealth.containsKey(key)) {
-              log('📊 vm_health.$key: ${vmHealth[key]}');
-            }
-          }
-          
-          if (vmHealth.containsKey('resource_usage')) {
-            final resourceUsage = vmHealth['resource_usage'];
-            log('📊 vm_health.resource_usage type: ${resourceUsage.runtimeType}');
-            if (resourceUsage is Map) {
-              log('📊 vm_health.resource_usage keys: ${resourceUsage.keys.toList()}');
-              
-              // Log dei singoli valori
-              for (var key in ['cpu_usage_percent', 'memory_usage_percent', 'disk_usage_percent', 'network_usage_percent']) {
-                if (resourceUsage.containsKey(key)) {
-                  log('📊 vm_health.resource_usage.$key: ${resourceUsage[key]}');
-                }
-              }
-            }
-          }
-        }
-      }
-      
-      // Log della struttura system_health (legacy)
-      if (dashboardData!.containsKey('system_health')) {
-        final systemHealth = dashboardData!['system_health'];
-        log('📊 system_health type: ${systemHealth.runtimeType}');
-        if (systemHealth is Map) {
-          log('📊 system_health keys: ${systemHealth.keys.toList()}');
-          
-          if (systemHealth.containsKey('resource_usage')) {
-            final resourceUsage = systemHealth['resource_usage'];
-            log('📊 resource_usage type: ${resourceUsage.runtimeType}');
-            if (resourceUsage is Map) {
-              log('📊 resource_usage keys: ${resourceUsage.keys.toList()}');
-              
-              // Log dei singoli valori
-              for (var key in ['cpu_usage_percent', 'memory_usage_percent', 'disk_usage_percent', 'network_usage_percent']) {
-                if (resourceUsage.containsKey(key)) {
-                  log('📊 $key: ${resourceUsage[key]}');
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-    
-    // Estrai i dati di system_health dal dashboard
-    final data = _getSystemHealthData();
-    
-    log('📊 Extracted data keys: ${data.keys.join(', ')}');
-    log('📊 Extracted data isEmpty: ${data.isEmpty}');
-    
-    // Log dei valori estratti
-    if (data.isNotEmpty) {
-      for (var key in ['cpu_usage_percent', 'memory_usage_percent', 'disk_usage_percent', 'network_usage_percent']) {
-        if (data.containsKey(key)) {
-          log('📊 Extracted $key: ${data[key]}');
-        }
-      }
-    }if (data.isEmpty) {
-      log('❌ No data extracted, showing debug card with raw data');
-      return _buildDebugCard();
-    }
+  });
 
+  @override
+  State<SystemHealthTab> createState() => _SystemHealthTabState();
+}
+
+class _SystemHealthTabState extends State<SystemHealthTab> {
+  Map<String, dynamic>? _systemHealthData;
+  bool _isLoading = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSystemHealthData();
+  }
+
+  Future<void> _loadSystemHealthData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+    try {
+      final data = await PrometheusApiService().loadVMHealthData();
+      setState(() {
+        _systemHealthData = data;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_isLoading) {
+      return _buildLoadingState();
+    }
+    if (_error != null) {
+      return _buildErrorState();
+    }
+    final data = _getSystemHealthData();
+    if (data.isEmpty) {
+      return _buildNoDataCard();
+    }
     return RefreshIndicator(
-      onRefresh: () async => onRefresh?.call(),
+      onRefresh: () async {
+        await _loadSystemHealthData();
+        widget.onRefresh?.call();
+      },
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -114,6 +75,49 @@ class SystemHealthTab extends StatelessWidget {
             _buildSystemStatusSection(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildLoadingState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(color: Color(0xFF4facfe)),
+          SizedBox(height: 16),
+          Text(
+            'Loading System Health Data...',
+            style: TextStyle(color: Colors.white70),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error, color: Colors.red, size: 48),
+          const SizedBox(height: 16),
+          const Text(
+            'Error loading system health data',
+            style: TextStyle(color: Colors.white, fontSize: 18),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            _error ?? 'Unknown error',
+            style: const TextStyle(color: Colors.white70, fontSize: 14),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadSystemHealthData,
+            child: const Text('Retry'),
+          ),
+        ],
       ),
     );
   }
@@ -160,16 +164,17 @@ class SystemHealthTab extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildMetricsGrid(Map<String, dynamic> data) {
     log('🏗️ Building metrics grid with data.isEmpty: ${data.isEmpty}');
-    
+
     if (data.isEmpty) {
       log('❌ Data is empty, showing no data card');
       return _buildNoDataCard();
     }
-    
+
     log('✅ Data available, building grid with 4 cards');
-    
+
     return GridView.count(
       crossAxisCount: 2,
       shrinkWrap: true,
@@ -184,7 +189,9 @@ class SystemHealthTab extends StatelessWidget {
         _buildMetricCard('Network', 'network', Icons.network_check, Colors.purple, data),
       ],
     );
-  }  Widget _buildMetricCard(String title, String key, IconData icon, Color color, Map<String, dynamic> data) {
+  }
+
+  Widget _buildMetricCard(String title, String key, IconData icon, Color color, Map<String, dynamic> data) {
     log('🔨 Building $title card for key: $key');
     log('🔨 Available data keys: ${data.keys.toList()}');
     
@@ -451,7 +458,9 @@ class SystemHealthTab extends StatelessWidget {
         ],
       ),
     );
-  }  double _getNumericValue(String key, Map<String, dynamic> data) {
+  }
+
+  double _getNumericValue(String key, Map<String, dynamic> data) {
     log('🔍 Looking for key: $key in data keys: (${data.keys.join(', ')})');
     
     // Map the key to the expected backend key names
@@ -635,8 +644,8 @@ class SystemHealthTab extends StatelessWidget {
     }
     
     // 4. Try vm_health nested data (most recent backend structure)
-    if (dashboardData?.containsKey('vm_health') == true) {
-      final vmHealth = dashboardData!['vm_health'];
+    if (widget.dashboardData?.containsKey('vm_health') == true) {
+      final vmHealth = widget.dashboardData!['vm_health'];
       log('📊 Checking vm_health section: $vmHealth');
       
       if (vmHealth is Map<String, dynamic>) {
@@ -694,18 +703,20 @@ class SystemHealthTab extends StatelessWidget {
     
     log('❌ No valid value found for $key (looked for: $lookupKey)');
     return 0.0;
-  }// Helper method to extract system health data from dashboard
+  }
+
+  // Helper method to extract system health data from dashboard
   Map<String, dynamic> _getSystemHealthData() {
-    if (dashboardData == null) return {};
+    if (_systemHealthData == null) return {};
     
-    log('🔍 _getSystemHealthData - dashboardData keys: ${dashboardData!.keys}');
+    log('🔍 _getSystemHealthData - dashboardData keys: ${_systemHealthData!.keys}');
     
     // Start with the root data
-    Map<String, dynamic> actualData = dashboardData!;
+    Map<String, dynamic> actualData = _systemHealthData!;
     
     // Check if data is wrapped in a 'data' key (fallback for older structure)
-    if (dashboardData!.containsKey('data') && !dashboardData!.containsKey('system_health') && !dashboardData!.containsKey('vm_health')) {
-      final dataSection = dashboardData!['data'];
+    if (_systemHealthData!.containsKey('data') && !_systemHealthData!.containsKey('system_health') && !_systemHealthData!.containsKey('vm_health')) {
+      final dataSection = _systemHealthData!['data'];
       if (dataSection is Map<String, dynamic>) {
         log('📊 Found wrapped data section with keys: ${dataSection.keys}');
         actualData = dataSection;
@@ -872,6 +883,7 @@ class SystemHealthTab extends StatelessWidget {
       ],
     );
   }
+
   Widget _buildDebugCard() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -898,57 +910,57 @@ class SystemHealthTab extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 16),
-                if (dashboardData != null) ...[
+                if (widget.dashboardData != null) ...[
                   Text(
-                    'Dashboard Keys: ${dashboardData!.keys.join(', ')}',
+                    'Dashboard Keys: ${widget.dashboardData!.keys.join(', ')}',
                     style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                   const SizedBox(height: 8),
-                  if (dashboardData!.containsKey('vm_health')) ...[
+                  if (widget.dashboardData!.containsKey('vm_health')) ...[
                     const Text(
                       'vm_health section:',
                       style: TextStyle(color: Colors.yellow, fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      dashboardData!['vm_health'].toString(),
+                      widget.dashboardData!['vm_health'].toString(),
                       style: const TextStyle(color: Colors.white70, fontSize: 11),
                       maxLines: 10,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                   ],
-                  if (dashboardData!.containsKey('system_health')) ...[
+                  if (widget.dashboardData!.containsKey('system_health')) ...[
                     const Text(
                       'system_health section:',
                       style: TextStyle(color: Colors.yellow, fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      dashboardData!['system_health'].toString(),
+                      widget.dashboardData!['system_health'].toString(),
                       style: const TextStyle(color: Colors.white70, fontSize: 11),
                       maxLines: 10,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                   ],
-                  if (dashboardData!.containsKey('system_resources')) ...[
+                  if (widget.dashboardData!.containsKey('system_resources')) ...[
                     const Text(
                       'system_resources section:',
                       style: TextStyle(color: Colors.yellow, fontSize: 14, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      dashboardData!['system_resources'].toString(),
+                      widget.dashboardData!['system_resources'].toString(),
                       style: const TextStyle(color: Colors.white70, fontSize: 11),
                       maxLines: 10,
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 8),
                   ],
-                  if (!dashboardData!.containsKey('vm_health') && 
-                      !dashboardData!.containsKey('system_health') && 
-                      !dashboardData!.containsKey('system_resources'))
+                  if (!widget.dashboardData!.containsKey('vm_health') && 
+                      !widget.dashboardData!.containsKey('system_health') && 
+                      !widget.dashboardData!.containsKey('system_resources'))
                     const Text(
                       'NO vm_health, system_health, or system_resources section found!',
                       style: TextStyle(color: Colors.red, fontSize: 14),
@@ -963,7 +975,7 @@ class SystemHealthTab extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ElevatedButton(
-            onPressed: () => onRefresh?.call(),
+            onPressed: () => widget.onRefresh?.call(),
             child: const Text('🔄 Refresh Data'),
           ),
         ],
